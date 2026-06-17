@@ -1,0 +1,68 @@
+html, body { /*stops scrolling*/
+  margin: 0;
+  padding: 0;
+}
+
+#container{ /*this is the container that holds everything and centers everything*/
+ display: flex;
+  justify-content: center;
+  align-items: center;    
+  height: 100vh;
+  margin: 0;
+  background-color: #151515;
+}
+
+#header-div{ /* this is the grey box that holds the text and buttons*/
+  display: flex;
+  flex-direction: column; 
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  width: 430px;
+  background-color: #313131;
+  border-radius: 13px;
+  gap: 9%; /*to adjust the distance from the text to the buttons vartically idk change if it looks weird*/
+  overflow: hidden; /*important! gamitin nyo toh sa mga div para di mag overflow yung container kahit mag change ng screen size*/
+
+}
+
+#header-text{
+    font-size: medium;
+    color: #e2e2e2;
+    margin-bottom: -20px;
+}
+
+#buttons-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    width: 400px;
+    gap: 30px;
+    overflow: hidden;
+}
+
+#user{
+    height: 40px;
+    width: 150px;
+}
+
+#admin{
+     height: 40px;
+    width: 150px;
+}
+
+#logo{
+  height: 80px;
+  width: 200px;
+  position: fixed;
+  top: 3%;
+  left: 3%;
+}
+
+#wellcome{
+    font-size: medium;
+    color: #ffc300;
+    margin-bottom: -10px;
+}
+

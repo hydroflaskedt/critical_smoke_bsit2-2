@@ -1,0 +1,90 @@
+html, body { /*stops scrolling*/
+  margin: 0;
+  padding: 0;
+}
+
+#container{
+   display: flex;
+  justify-content: center;
+  align-items: center;    
+  height: 100vh;
+  margin: 0;
+  background-color: #151515;
+  overflow: hidden;
+}
+
+#signup-div{
+  display: flex;
+  flex-direction: column; 
+  justify-content: start;
+  align-items: center;
+  height: 400px;
+  gap: 20px;
+  width: 430px;
+  background-color: #313131;
+  border-radius: 5%;
+  overflow: hidden;
+}
+
+#username-signup{
+    height: 30px;
+    width: 350px;
+    background-color: #313131;
+    color: whitesmoke;  
+    border: 1px solid #878787;
+    border-radius: 5px;
+}
+
+#password-signup{
+    height: 30px;
+    width: 350px;
+    background-color: #313131;
+    color: whitesmoke;
+    border: 1px solid #878787;
+    border-radius: 5px;
+}
+
+#email-signup{
+    height: 30px;
+    width: 350px;
+    background-color: #313131;
+    color: whitesmoke;
+    border: 1px solid #878787;
+    border-radius: 5px;
+}
+
+#header-text{
+    font-size: 22px;
+    color: white;
+    margin-top: 45px;
+    color: whitesmoke;
+}
+
+
+#signup-btn{
+    width: 350px;
+    height: 40px;
+    background-color: #ffc300;
+    border: 0px;
+    border-radius: 5px;
+}
+
+#footer-txt{
+  color: whitesmoke;
+  text-decoration: none;
+}
+
+#footer-link{
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    padding-left: 5px;
+}
+
+#logo{
+  height: 80px;
+  width: 200px;
+  position: fixed;
+  top: 3%;
+  left: 3%;
+}

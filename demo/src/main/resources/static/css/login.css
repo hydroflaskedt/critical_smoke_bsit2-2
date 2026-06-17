@@ -1,0 +1,80 @@
+html, body { /*stops scrolling*/
+  margin: 0;
+  padding: 0;
+}
+
+#container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;    
+  height: 100vh;
+  margin: 0;
+  background-color: #151515;
+}
+
+#login-div{
+ display: flex;
+  flex-direction: column; 
+  justify-content: start;
+  align-items: center;
+  height: 350px;
+  gap: 20px;
+  width: 430px;
+  background-color: #313131;
+  border-radius: 5%;
+  overflow: hidden;
+}
+
+#username-login{
+    height: 30px;
+    width: 350px;
+    background-color: #313131;
+    color: whitesmoke;  
+    border: 1px solid #878787;
+    border-radius: 5px;
+}
+
+#password-login{
+   height: 30px;
+    width: 350px;
+    background-color: #313131;
+    color: whitesmoke;  
+    border: 1px solid #878787;
+    border-radius: 5px;
+}
+
+#header-text{
+    font-size: 22px;
+    color: white;
+    margin-top: 50px;
+    
+}
+
+#login-btn{
+    width: 350px;
+    height: 40px;
+    background-color: #ffc300;
+    border: 0px;
+    border-radius: 5px;
+}
+
+#footer-txt{
+    color: whitesmoke;
+  
+}
+
+#footer-link{
+  color: white;
+  text-decoration: none;
+  padding-left: 5px;
+  font-weight: bold;
+}
+
+#logo{
+  height: 80px;
+  width: 200px;
+  position: fixed;
+  top: 3%;
+  left: 3%;
+}
