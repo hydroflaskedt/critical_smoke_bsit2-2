@@ -1,80 +1,96 @@
-html, body { /*stops scrolling*/
-  margin: 0;
-  padding: 0;
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-#container{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;    
-  height: 100vh;
-  margin: 0;
-  background-color: #151515;
+body {
+    background: #18181b;
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    min-height: 100vh;
 }
 
-#login-div{
- display: flex;
-  flex-direction: column; 
-  justify-content: start;
-  align-items: center;
-  height: 350px;
-  gap: 20px;
-  width: 430px;
-  background-color: #313131;
-  border-radius: 5%;
-  overflow: hidden;
+#container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
 }
 
-#username-login{
-    height: 30px;
-    width: 350px;
-    background-color: #313131;
-    color: whitesmoke;  
-    border: 1px solid #878787;
-    border-radius: 5px;
+#logo {
+    width: 140px;
+    margin-bottom: 32px;
 }
 
-#password-login{
-   height: 30px;
-    width: 350px;
-    background-color: #313131;
-    color: whitesmoke;  
-    border: 1px solid #878787;
-    border-radius: 5px;
+#login-div {
+    background: #27272a;
+    border-radius: 10px;
+    padding: 32px;
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 }
 
-#header-text{
+#header-text {
+    color: #f4f4f5;
     font-size: 22px;
-    color: white;
-    margin-top: 50px;
-    
+    font-weight: 700;
+    text-transform: capitalize;
+    margin-bottom: 6px;
+    text-align: center;
 }
 
-#login-btn{
-    width: 350px;
-    height: 40px;
-    background-color: #ffc300;
-    border: 0px;
-    border-radius: 5px;
+#login-div input {
+    background: #18181b;
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    padding: 12px 14px;
+    color: #e5e5e5;
+    font-size: 14px;
+    outline: none;
 }
 
-#footer-txt{
-    color: whitesmoke;
-  
+#login-div input::placeholder {
+    color: #777;
 }
 
-#footer-link{
-  color: white;
-  text-decoration: none;
-  padding-left: 5px;
-  font-weight: bold;
+#login-div input:focus {
+    border-color: #ffc300;
 }
 
-#logo{
-  height: 80px;
-  width: 200px;
-  position: fixed;
-  top: 3%;
-  left: 3%;
+#login-btn {
+    background: #ffc300;
+    color: #1a1a1a;
+    border: none;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: background 0.15s;
+}
+
+#login-btn:hover {
+    background: #e6b000;
+}
+
+#footer-txt {
+    color: #888;
+    font-size: 13px;
+    text-align: center;
+    margin-top: 8px;
+}
+
+#footer-link {
+    color: #ffc300;
+    text-decoration: none;
+}
+
+#footer-link:hover {
+    text-decoration: underline;
 }

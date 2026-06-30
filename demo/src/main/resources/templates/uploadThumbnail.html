@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/publishFlow.css">
+    <script src="/js/homepage.js" defer></script>
+    <title>Upload Thumbnails</title>
+</head>
+<body>
+    <div class="container">
+        <div th:replace="~{homepage :: navbar}"></div>
+
+        <div class="publish-flow-container">
+
+            <!-- Progress Indicator -->
+            <div class="progress-section">
+                <div class="progress-item completed">
+                    <div class="progress-dot">✓</div>
+                    <span>Details</span>
+                </div>
+                <div class="progress-line completed"></div>
+                <div class="progress-item active">
+                    <div class="progress-dot">2</div>
+                    <span>Upload Thumbnails</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-item">
+                    <div class="progress-dot">3</div>
+                    <span>Upload Game Files</span>
+                </div>
+            </div>
+
+            <!-- Thumbnails Section -->
+            <div class="flow-content">
+                <h2>Upload Thumbnails</h2>
+
+                <form action="/uploadThumbnail" method="post" enctype="multipart/form-data">
+
+                    <div class="image-upload-grid">
+
+                        <!-- Cover Image -->
+                        <div class="image-upload-box large">
+                            <label>GAME MAIN COVER</label>
+                            <div class="image-preview" id="coverPreview">
+                                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                            </div>
+                            <input type="file" name="coverImage" accept="image/*" id="coverInput" style="display:none;">
+                            <button type="button" class="btn-upload" onclick="document.getElementById('coverInput').click()">Upload Image</button>
+                        </div>
+
+                        <!-- Game Logo -->
+                        <div class="image-upload-box">
+                            <label>GAME LOGO TRANSPARENT</label>
+                            <div class="image-preview" id="logoPreview">
+                                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                            </div>
+                            <input type="file" name="gameLogo" accept="image/*" id="logoInput" style="display:none;">
+                            <button type="button" class="btn-upload" onclick="document.getElementById('logoInput').click()">Upload Image</button>
+                        </div>
+
+                        <!-- Preview Image 1 (always shown) -->
+                        <div class="image-upload-box" id="preview1Box">
+                            <label>GAME PREVIEW IMAGE</label>
+                            <div class="image-preview" id="preview1Preview">
+                                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                            </div>
+                            <input type="file" name="previewImage1" accept="image/*" id="preview1Input" style="display:none;">
+                            <button type="button" class="btn-upload" onclick="document.getElementById('preview1Input').click()">Upload Image</button>
+                        </div>
+
+                        <!-- Add box (shown until max 3 previews reached) -->
+                        <div class="image-add-box" id="addBox">
+                            <button type="button" onclick="addPreviewBox()" class="btn-add">+</button>
+                        </div>
+
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn-back" onclick="window.history.back()">Back</button>
+                        <button type="submit" class="btn-next">Next</button>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Track how many preview boxes exist (starts at 1)
+        let previewCount = 1;
+        const MAX_PREVIEWS = 3;
+
+        // Wire up file input → show image preview
+        function wirePreview(inputId, previewId) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            input.addEventListener('change', function () {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        document.getElementById(previewId).innerHTML =
+                            `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">`;
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+
+        function addPreviewBox() {
+            if (previewCount >= MAX_PREVIEWS) return;
+
+            previewCount++;
+            const n = previewCount;
+
+            const box = document.createElement('div');
+            box.className = 'image-upload-box';
+            box.id = 'preview' + n + 'Box';
+            box.innerHTML = `
+                <label>GAME PREVIEW IMAGE</label>
+                <div class="image-preview" id="preview${n}Preview">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                </div>
+                <input type="file" name="previewImage${n}" accept="image/*" id="preview${n}Input" style="display:none;">
+                <button type="button" class="btn-upload" onclick="document.getElementById('preview${n}Input').click()">Upload Image</button>
+            `;
+
+            // Insert the new box before the + add box
+            const addBox = document.getElementById('addBox');
+            addBox.parentNode.insertBefore(box, addBox);
+
+            wirePreview('preview' + n + 'Input', 'preview' + n + 'Preview');
+
+            // Hide + button once we hit the max
+            if (previewCount >= MAX_PREVIEWS) {
+                addBox.style.display = 'none';
+            }
+        }
+
+        // Init
+        wirePreview('coverInput', 'coverPreview');
+        wirePreview('logoInput', 'logoPreview');
+        wirePreview('preview1Input', 'preview1Preview');
+    </script>
+
+    <script th:if="${error == 'missingRequired'}">
+        alert("Please upload at least a Cover Image or a Game Logo.");
+    </script>
+    <script th:if="${error == 'invalidImage'}">
+        alert("Please upload a valid image file.");
+    </script>
+</body>
+</html>

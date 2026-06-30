@@ -49,6 +49,7 @@ html::-webkit-scrollbar-thumb:hover {
     gap: 20px;
 
     justify-content: flex-start; /* keeps natural left-to-right flow */
+
 }
 
 /* LOGO */
@@ -160,6 +161,7 @@ html::-webkit-scrollbar-thumb:hover {
     background-color: #686060;
     overflow: hidden;
     white-space: nowrap;  
+    margin-left: 1px;
 }
 
 .profile-box.expanded{
@@ -354,9 +356,48 @@ html::-webkit-scrollbar-thumb:hover {
     color: whitesmoke;
 }
 
+#dropdownBox {
+    display: none;
+}
+
 #not-logged-text{
+    display: flex;
+    flex-direction: column;
     font-size: medium;
     color: whitesmoke;
     text-decoration: none;
     font: bold;
+}
+
+.games-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+}
+
+.game-card {
+    display: flex;
+    flex-direction: column;
+    width: 180px;
+    cursor: pointer;
+}
+
+.game-card img {
+    width: 180px;
+    height: 240px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.game-card h3 {
+    color: white;
+    font-size: 14px;
+    margin: 8px 0 4px 0;
+}
+
+.game-card p {
+    color: #ffc300;
+    font-size: 13px;
+    margin: 0;
 }

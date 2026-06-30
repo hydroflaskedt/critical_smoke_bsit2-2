@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <!--/* Reusable admin sidebar. Include with:
+        <div th:replace="~{adminSidebar :: sidebar(active='games')}"></div>
+       Pass active='games' or active='customers' so the right link highlights. */-->
+    <div th:fragment="sidebar(active)" class="admin-sidebar">
+        <div class="sidebar-logo-box">
+            <img id="sidebar-logo" src="/images/logo.png" alt="logo">
+        </div>
+
+        <div class="sidebar-section">
+            <span class="sidebar-section-label">MAIN</span>
+
+            <a href="/admin" class="sidebar-link" th:classappend="${active == 'games'} ? 'sidebar-link-active' : ''">
+                <span class="sidebar-link-icon">▦</span>
+                <span>Game Management</span>
+            </a>
+
+            <a href="/admin/customers" class="sidebar-link" th:classappend="${active == 'customers'} ? 'sidebar-link-active' : ''">
+                <span class="sidebar-link-icon">◎</span>
+                <span>Customer Management</span>
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>

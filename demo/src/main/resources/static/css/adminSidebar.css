@@ -1,0 +1,71 @@
+/* ===== Layout: sidebar + content area =====
+   Wraps the existing admin page content without touching its own
+   table/badge/button styles in adminPanel.css. */
+.admin-layout {
+    display: flex;
+    align-items: flex-start;
+}
+
+.admin-content {
+    flex: 1;
+    padding: 24px 32px;
+    min-width: 0;
+}
+
+/* ===== Sidebar ===== */
+.admin-sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: #18181b;
+    min-height: calc(100vh - 64px);
+    padding: 20px 16px;
+    border-right: 1px solid #2a2a2a;
+}
+
+.sidebar-logo-box {
+    margin-bottom: 24px;
+    padding: 0 8px;
+}
+
+#sidebar-logo {
+    height: 28px;
+}
+
+.sidebar-section-label {
+    display: block;
+    color: #6b6b6b;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 0 12px;
+    margin-bottom: 8px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    color: #ccc;
+    font-size: 14px;
+    text-decoration: none;
+    margin-bottom: 2px;
+}
+
+.sidebar-link:hover {
+    background: #27272a;
+    color: #fff;
+}
+
+.sidebar-link-active {
+    background: #2e2e30;
+    color: #fff;
+    font-weight: 600;
+}
+
+.sidebar-link-icon {
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+}

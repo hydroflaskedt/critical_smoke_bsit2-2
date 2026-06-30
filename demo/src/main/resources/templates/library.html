@@ -1,15 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/homepage.css">
     <script src="/js/homepage.js" defer></script>
-    <title>Document</title>
+    <title>My Library</title>
 </head>
 <body>
     <div class="container">
-    <div th:replace="~{homepage :: navbar}"></div>
+        <div th:replace="~{homepage :: navbar}"></div>
+
+        <div style="padding: 40px 20px;">
+            <h1 style="color: white; font-size: 32px; margin: 0 0 30px 0;">Library</h1>
+
+            <div
+                th:if="${games.isEmpty()}"
+                style="color: #aaa; padding: 20px; font-size: 16px;"
+            >
+                You haven't purchased any games yet. <a href="/" style="color: #ffc300;">Browse the store</a>
+            </div>
+
+            <div class="games-container" th:if="${!games.isEmpty()}">
+                <div
+                    class="game-card"
+                    th:each="game : ${games}"
+                    th:onclick="|window.location.href='/game/${game.gameId}'|"
+                    style="cursor: pointer;"
+                >
+                    <img th:src="${game.coverImage}" alt="cover">
+                    <h3 th:text="${game.gameTitle}"></h3>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <script th:inline="javascript">
+        const loggedIn = /*[[${loggedIn}]]*/ false;
+    </script>
 </body>
 </html>

@@ -1,7 +1,11 @@
 package demo.demo;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,4 +62,26 @@ public class SessionService {
             }
         }
     }
-}
+ 
+
+    public void addUserToModel(Model model, HttpServletRequest request, HttpSession session) {
+
+        restoreSession(request, session);
+
+        Long userId = (Long) session.getAttribute("userId");
+        String username = (String) session.getAttribute("username");
+        String email = (String) session.getAttribute("email");
+
+        Map<String, Object> userInfo = new HashMap<>();
+
+        userInfo.put("userId", userId);
+        userInfo.put("username", username);
+        userInfo.put("email", email);
+
+        boolean loggedIn = userId != null;
+
+        model.addAttribute("loggedIn", loggedIn);
+        model.addAttribute("userInfo", userInfo);
+        }
+    }
+

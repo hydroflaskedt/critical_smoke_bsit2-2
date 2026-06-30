@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/css/homepage.css">
@@ -15,22 +15,30 @@
       <div class="left">
         <div class="logo-box"><img id="logo" src="/images/logo.png" alt="logo"></div>
         <span id="store-text"></span>
-            <div class="store-box">
+            <div class="store-box" onclick="window.location.href='/'">
                 <img id="store-icon" src="/images/store.png"> <span id="store-text">Store</span>
             </div>
-            <div class="library-box">
+            <div class="library-box" onclick="window.location.href='/publishedGames'">
                 <img id="library-icon" src="/images/controller.png"> <span id="library-text">Library</span>
             </div>
     </div>
 
     <div class="center">
-        <input type="text" id="search-bar" placeholder="search">
+        <form id="searchForm" onsubmit="performSearch(event)">
+            <input 
+                type="text" 
+                id="search-bar" 
+                name="search"
+                placeholder="search"
+                th:value="${searchQuery}"
+            >
+        </form>
     </div>
 
     <div class="right">
         <button id="publish-btn"> <span id="publish-icon"> + </span>  <span id="publish-text" > Publish Game </span> </button> 
         <img id="inventory-icon" src="/images/inventory.svg"> 
-        <img id="shopping-cart-icon" src="/images/shoppingcart.png">
+        <img id="shopping-cart-icon" src="/images/shoppingcart.png" onclick="window.location.href='/cart'">
         
         
             <div th:if="${loggedIn}" class="profile-box"> 
@@ -56,27 +64,99 @@
     <div class="container">
 
         <div>
-            <img id="image-banner" src="/images/banner.png">  <!-- replace with acrtual image -->
+            <img id="image-banner" src="/images/banner.png">
         </div>
     
         <div class="genre-box">
-            <div class="genre-card"><img id="genre-icon" src="/images/horror-genre.svg" alt="horror genre"> <span id="horror-title"> horror </span> </div>
-            <div class="genre-card"><img id="genre-icon" src="/images/action_genre.svg" alt="action genre"><span id="action-title"> action </span></div>
-            <div class="genre-card"><img id="genre-icon" src="/images/adventure_genre.svg" alt="adventure genre"><span id="adventure-title"> adventure </span></div>
-            <div class="genre-card"><img id="genre-icon" src="/images/casual_genre.svg" alt="casual genre"><span id="casual-title"> casual </span></div>
-            <div class="genre-card"><img id="genre-icon" src="/images/strategy_genre.svg" alt="strategy genre"><span id="strategy-title"> strategy </span></div>
-            <div class="genre-card"><img id="genre-icon" src="/images/shooter_genre.svg" alt="shooter genre"><span id="shooter-title"> shooter </span></div>
-            <div class="genre-card"><img id="genre-icon" src="/images/sports_genre.svg" alt="sports genre"><span id="sports-title"> sports </span></div>
-            <div class="genre-card"><img id="rpg-icon" src="/images/rpg_genre.svg" alt="rpg genre"><span id="rpg-title"> rpg </span></div>
+            <div class="genre-card" onclick="filterByGenre('Horror')">
+                <img id="genre-icon" src="/images/horror-genre.svg" alt="horror genre"> 
+                <span id="horror-title"> horror </span> 
+            </div>
+            <div class="genre-card" onclick="filterByGenre('Action')">
+                <img id="genre-icon" src="/images/action_genre.svg" alt="action genre">
+                <span id="action-title"> action </span>
+            </div>
+            <div class="genre-card" onclick="filterByGenre('Adventure')">
+                <img id="genre-icon" src="/images/adventure_genre.svg" alt="adventure genre">
+                <span id="adventure-title"> adventure </span>
+            </div>
+            <div class="genre-card" onclick="filterByGenre('Casual')">
+                <img id="genre-icon" src="/images/casual_genre.svg" alt="casual genre">
+                <span id="casual-title"> casual </span>
+            </div>
+            <div class="genre-card" onclick="filterByGenre('Strategy')">
+                <img id="genre-icon" src="/images/strategy_genre.svg" alt="strategy genre">
+                <span id="strategy-title"> strategy </span>
+            </div>
+            <div class="genre-card" onclick="filterByGenre('Shooters')">
+                <img id="genre-icon" src="/images/shooter_genre.svg" alt="shooter genre">
+                <span id="shooter-title"> shooter </span>
+            </div>
+            <div class="genre-card" onclick="filterByGenre('Sports')">
+                <img id="genre-icon" src="/images/sports_genre.svg" alt="sports genre">
+                <span id="sports-title"> sports </span>
+            </div>
+            <div class="genre-card" onclick="filterByGenre('RPG')">
+                <img id="rpg-icon" src="/images/rpg_genre.svg" alt="rpg genre">
+                <span id="rpg-title"> rpg </span>
+            </div>
         </div>
 
-        
-        
-        
+        <!-- Clear filter button (show when genre or search is active) -->
+        <div th:if="${selectedGenre != null || searchQuery != null}" style="padding: 20px 20px 0; text-align: center;">
+            <span th:if="${searchQuery != null}" style="color: #ffc300; font-weight: bold;">
+                Searching for: <span th:text="${searchQuery}"></span>
+            </span>
+            <span th:if="${selectedGenre != null}" style="color: #ffc300; font-weight: bold;">
+                Filtering by: <span th:text="${selectedGenre}"></span>
+            </span>
+            <button onclick="clearFilter()" style="margin-left: 15px; background: #ffc300; color: black; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">Clear</button>
+        </div>
 
+        <!-- Admin panel link, only shows if user is admin -->
+        <div th:if="${userInfo['isAdmin']}">
+            <a href="/admin">Go to Admin Panel</a>
+        </div>
+
+        <!-- Approved games displayed on homepage -->
+        <div class="games-container">
+            <div
+                class="game-card"
+                th:each="game : ${games}"
+                th:onclick="|window.location.href='/game/${game.gameId}'|"
+                style="cursor: pointer;"
+            >
+                <img th:src="${game.coverImage}" alt="cover">
+                <h3 th:text="${game.title}"></h3>
+                <p>₱<span th:text="${game.price}"></span></p>
+            </div>
+
+            <!-- Empty state when no games match filter/search -->
+            <div th:if="${games.isEmpty()}" style="grid-column: 1 / -1; text-align: center; color: #aaa; padding: 40px;">
+                <p th:if="${searchQuery != null}">No games found matching "<span th:text="${searchQuery}"></span>".</p>
+                <p th:if="${selectedGenre != null && searchQuery == null}">No games found for this genre.</p>
+                <button onclick="clearFilter()" style="background: #ffc300; color: black; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">View All Games</button>
+            </div>
+        </div>
     </div>
     
 <script th:fragment="navbar" th:inline="javascript">
     const loggedIn = /*[[${loggedIn}]]*/ false;
+
+    function performSearch(event) {
+        event.preventDefault();
+        const searchQuery = document.getElementById('search-bar').value.trim();
+        if (searchQuery.length > 0) {
+            window.location.href = '/?search=' + encodeURIComponent(searchQuery);
+        }
+    }
+
+    function filterByGenre(genre) {
+        window.location.href = '/?genre=' + encodeURIComponent(genre);
+    }
+
+    function clearFilter() {
+        window.location.href = '/';
+    }
 </script>
 </html>

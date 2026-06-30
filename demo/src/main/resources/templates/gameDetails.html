@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/gameDetails.css">
+    <script src="/js/homepage.js" defer></script>
+    <title th:text="${game.title}">Game Details</title>
+</head>
+<body>
+    <div class="container">
+        <div th:replace="~{homepage :: navbar}"></div>
+
+        <div class="game-details-wrapper">
+
+            <!-- Title -->
+            <h1 class="game-title" th:text="${game.title}"></h1>
+
+            <!-- Top row: cover + purchase card -->
+            <div class="game-details-top-row">
+
+                <!-- Cover image -->
+                <img
+                    id="main-cover"
+                    class="game-cover"
+                    th:src="${game.coverImage}"
+                    th:alt="${game.title}"
+                >
+
+                <!-- Purchase card -->
+                <div class="purchase-box">
+                    <img
+                        th:if="${game.gameLogo != null}"
+                        class="game-logo"
+                        th:src="${game.gameLogo}"
+                        th:alt="${game.title} + ' logo'"
+                    >
+                    <p class="game-price">PHP <span th:text="${game.price}"></span></p>
+
+                    <!-- Approved: real forms -->
+                    <th:block th:if="${game.approved}">
+                        <form action="/cart/buy-now" method="post" style="width:100%;">
+                            <input type="hidden" name="gameId" th:value="${game.gameId}">
+                            <button type="submit" class="buy-btn">Buy Now</button>
+                        </form>
+                        <form action="/cart/add" method="post" style="width:100%;">
+                            <input type="hidden" name="gameId" th:value="${game.gameId}">
+                            <button type="submit" class="cart-btn">Add to Cart</button>
+                        </form>
+                    </th:block>
+
+                    <!-- Not approved: alert buttons -->
+                    <th:block th:unless="${game.approved}">
+                        <button type="button" class="buy-btn"
+                            onclick="alert('This game hasn\'t been approved yet and is not available for purchase.')">
+                            Buy Now
+                        </button>
+                        <button type="button" class="cart-btn"
+                            onclick="alert('This game hasn\'t been approved yet and is not available for purchase.')">
+                            Add to Cart
+                        </button>
+                    </th:block>
+                </div>
+
+            </div>
+
+            <!-- Preview thumbnails -->
+            <div class="preview-row" id="preview-strip">
+                <img th:if="${game.coverImage != null}"    th:src="${game.coverImage}"    class="active" onclick="switchCover(this)">
+                <img th:if="${game.previewImage1 != null}" th:src="${game.previewImage1}" onclick="switchCover(this)">
+                <img th:if="${game.previewImage2 != null}" th:src="${game.previewImage2}" onclick="switchCover(this)">
+                <img th:if="${game.previewImage3 != null}" th:src="${game.previewImage3}" onclick="switchCover(this)">
+            </div>
+
+            <!-- Short description -->
+            <p class="game-desc" th:text="${game.description1}"></p>
+
+            <!-- Genres -->
+            <div class="genre-section" th:if="${game.genre != null}">
+                <p class="genre-label">Genres</p>
+                <div class="genre-tags">
+                    <span
+                        class="genre-tag"
+                        th:each="g : ${#strings.arraySplit(game.genre, ',')}"
+                        th:text="${#strings.trim(g)}">
+                    </span>
+                </div>
+            </div>
+
+            <!-- Description 2 -->
+            <div th:if="${game.description2 != null}">
+                <p class="game-desc2" th:text="${game.description2}"></p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function switchCover(thumb) {
+            document.getElementById('main-cover').src = thumb.src;
+            document.querySelectorAll('#preview-strip img').forEach(img => img.classList.remove('active'));
+            thumb.classList.add('active');
+        }
+    </script>
+</body>
+</html>

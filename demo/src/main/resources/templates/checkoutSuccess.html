@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/checkoutSuccess.css">
+    <script src="/js/homepage.js" defer></script>
+    <title>Order Confirmed</title>
+</head>
+<body>
+    <div class="container">
+        <div th:replace="~{homepage :: navbar}"></div>
+
+        <div class="success-wrapper">
+
+            <!-- Thank-you banner -->
+            <div class="success-banner">
+                <div class="success-icon">✓</div>
+                <h1>Thank you for your purchase!</h1>
+                <p>Your order has been placed successfully. Your games are now available in your library.</p>
+            </div>
+
+            <!-- Receipt: show the items just purchased (most recent orders) -->
+            <div class="receipt-card" th:if="${recentOrders != null and !recentOrders.isEmpty()}">
+                <div class="receipt-header">
+                    <h2>Order Receipt</h2>
+                </div>
+
+                <div class="receipt-items">
+                    <div class="receipt-item" th:each="item : ${recentOrders}">
+                        <img th:src="${item.coverImage}" alt="cover">
+                        <span class="receipt-item-title" th:text="${item.gameTitle}"></span>
+                        <span class="receipt-item-price">PHP <span th:text="${#numbers.formatDecimal(item.gamePrice, 1, 2)}"></span></span>
+                    </div>
+                </div>
+
+                <div class="receipt-row" th:if="${discountPercent != null and discountPercent > 0}">
+                    <span>Discount/Coupon</span>
+                    <span th:text="'PHP -' + ${#numbers.formatDecimal(originalTotal - finalTotal, 1, 2)}"></span>
+                </div>
+
+                <div class="receipt-row receipt-row-strike" th:if="${discountPercent != null and discountPercent > 0}">
+                    <span>Original total</span>
+                    <span th:text="'PHP ' + ${#numbers.formatDecimal(originalTotal, 1, 2)}"></span>
+                </div>
+
+                <div class="receipt-row receipt-total">
+                    <span>Total paid</span>
+                    <span th:text="'PHP ' + ${#numbers.formatDecimal(finalTotal, 1, 2)}"></span>
+                </div>
+            </div>
+
+            <a href="/library" class="go-to-library-btn">Go to My Library</a>
+
+        </div>
+    </div>
+</body>
+</html>

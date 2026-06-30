@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/publishedGames.css">
+    <script src="/js/homepage.js" defer></script>
+    <script src="/js/publishGames.js" defer></script>
+    <title>Published Games</title>
+</head>
+<body>
+    <div class="container">
+        <div th:replace="~{homepage :: navbar}"></div>
+        <h2 style="color: white; padding: 20px;">My Published Games</h2>
+
+        <div
+            th:if="${games.isEmpty()}"
+            style="color: #aaa; padding: 20px; font-size: 16px;">
+            You haven't published any games yet. <a href="/publishGames" style="color: #ffc300;">Publish one now</a>
+        </div>
+
+        <div class="games-container" th:if="${!games.isEmpty()}">
+            <div class="game-card-wrapper" th:each="game : ${games}">
+
+                <div
+                    class="game-card"
+                    th:onclick="|window.location.href='/game/${game.gameId}'|"
+                    style="cursor: pointer;">
+
+                    <img th:src="${game.coverImage}" alt="cover">
+
+                    <!-- Under review badge -->
+                    <span class="review-badge" th:if="${game.underReview}">Pending Review</span>
+
+                    <h3 th:text="${game.title}"></h3>
+                    <p>₱<span th:text="${game.price}"></span></p>
+                </div>
+
+                <!-- Edit button (+) -->
+                <button
+                    class="edit-btn"
+                    th:onclick="|event.stopPropagation(); window.location.href='/game/edit/${game.gameId}'|"
+                    title="Edit game">
+                    +
+                </button>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

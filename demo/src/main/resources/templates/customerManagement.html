@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/adminPanel.css">
+    <link rel="stylesheet" href="/css/adminSidebar.css">
+    <link rel="stylesheet" href="/css/customerManagement.css">
+    <script src="/js/homepage.js" defer></script>
+    <title>Customer Management</title>
+</head>
+<body>
+    <div class="container">
+
+        <!-- Custom Admin Navbar -->
+        <div class="navbar">
+            <div class="left">
+                <div class="logo-box">
+                    <img id="logo" src="/images/logo.png" alt="logo">
+                </div>
+                <span style="color: #ffc300; font-weight: bold; font-size: 16px; margin-left: 10px;">Admin Panel</span>
+            </div>
+            <div class="right">
+                <div th:if="${loggedIn}" class="profile-box">
+                    <div class="profile-text" th:text="${userInfo.username}"> </div>
+                    <div class="profile-options">
+                        <button id="logout-btn">Logout</button>
+                        <button id="payment-history-btn">Payment History</button>
+                    </div>
+                </div>
+                <div th:if="${loggedIn}" class="arrow-box"> <img id="arrow-img" src="/images/arrow-down.png"> </div>
+            </div>
+        </div>
+
+        <div class="admin-layout">
+
+            <div th:replace="~{adminSidebar :: sidebar(active='customers')}"></div>
+
+            <div class="admin-content">
+
+                <h3 class="cm-title">Customer Management</h3>
+
+                <div class="cm-search-bar">
+                    <span class="cm-search-icon">🔍</span>
+                    <input type="text" id="customerSearchInput" placeholder="Search by username, email, or UID"
+                           onkeyup="filterCustomers()">
+                </div>
+
+                <div class="cm-card">
+                    <div class="cm-card-header">
+                        <h4>User List</h4>
+                    </div>
+
+                    <table class="cm-table">
+                        <thead>
+                            <tr>
+                                <th>USER PROFILE IDENTITY</th>
+                                <th>EMAIL</th>
+                                <th>ACTIONS NEEDED</th>
+                                <th>STATE</th>
+                                <th>PROFILE AUDITING</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <th:block th:each="row : ${customerRows}">
+
+                                <!-- Summary row -->
+                                <tr class="cm-row"
+                                    th:attr="onclick=|toggleCustomerRow(this)|"
+                                    th:data-search="${row.account.username} + ' ' + ${row.account.email}">
+                                    <td>
+                                        <div class="cm-identity">
+                                            <span class="cm-avatar">👤</span>
+                                            <span class="cm-username" th:text="${row.account.username}"></span>
+                                        </div>
+                                    </td>
+                                    <td th:text="${row.account.email}"></td>
+                                    <td>None</td>
+                                    <td><span class="cm-badge cm-badge-active">Active</span></td>
+                                    <td>
+                                        <button type="button" class="cm-view-btn">View User</button>
+                                    </td>
+                                </tr>
+
+                                <!-- Expandable detail row -->
+                                <tr class="cm-detail-row" th:id="'detail-' + ${row.account.userId}" style="display:none;">
+                                    <td colspan="5">
+                                        <div class="cm-detail-panel">
+
+                                            <div class="cm-detail-column">
+                                                <h5>Purchase History (<span th:text="${row.purchaseHistory.size()}"></span>)</h5>
+                                                <div th:if="${row.purchaseHistory.isEmpty()}" class="cm-detail-empty">
+                                                    No purchases yet.
+                                                </div>
+                                                <div class="cm-detail-list" th:unless="${row.purchaseHistory.isEmpty()}">
+                                                    <div class="cm-detail-item" th:each="order : ${row.purchaseHistory}">
+                                                        <img th:src="${order.coverImage}" alt="cover">
+                                                        <span class="cm-detail-item-title" th:text="${order.gameTitle}"></span>
+                                                        <span class="cm-detail-item-price">
+                                                            PHP <span th:text="${#numbers.formatDecimal(order.gamePrice, 1, 2)}"></span>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="cm-detail-total" th:unless="${row.purchaseHistory.isEmpty()}">
+                                                    Total spent: PHP <span th:text="${#numbers.formatDecimal(row.totalSpent, 1, 2)}"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="cm-detail-column">
+                                                <h5>Published Games (<span th:text="${row.publishedGames.size()}"></span>)</h5>
+                                                <div th:if="${row.publishedGames.isEmpty()}" class="cm-detail-empty">
+                                                    No games published.
+                                                </div>
+                                                <div class="cm-detail-list" th:unless="${row.publishedGames.isEmpty()}">
+                                                    <div class="cm-detail-item" th:each="game : ${row.publishedGames}">
+                                                        <img th:src="${game.coverImage}" alt="cover">
+                                                        <span class="cm-detail-item-title" th:text="${game.title}"></span>
+                                                        <span class="cm-badge"
+                                                              th:classappend="${game.approved} ? 'cm-badge-active' : 'cm-badge-pending'"
+                                                              th:text="${game.approved} ? 'Published' : 'Pending'"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </td>
+                                </tr>
+
+                            </th:block>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+   <script>
+    // Profile box expand/collapse
+    const profileBox = document.querySelector('.profile-box');
+    const arrowBox = document.querySelector('.arrow-box');
+
+    if (arrowBox) {
+        arrowBox.addEventListener('click', function() {
+            profileBox.classList.toggle('expanded');
+        });
+    }
+
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            fetch('/logout', { method: 'POST' })
+                .then(() => window.location.href = '/');
+        });
+    }
+
+    // Customer row expand/collapse
+    function toggleCustomerRow(rowEl) {
+        const targetId = rowEl.nextElementSibling.id;
+        const detailRow = document.getElementById(targetId);
+        if (!detailRow) return;
+        detailRow.style.display = (detailRow.style.display === 'none' || !detailRow.style.display) ? 'table-row' : 'none';
+    }
+
+    function filterCustomers() {
+        const query = document.getElementById('customerSearchInput').value.trim().toLowerCase();
+        document.querySelectorAll('.cm-row[data-search]').forEach(row => {
+            const haystack = row.getAttribute('data-search').toLowerCase();
+            const detailRow = row.nextElementSibling;
+            const match = haystack.includes(query);
+            row.style.display = match ? '' : 'none';
+            if (detailRow && detailRow.classList.contains('cm-detail-row')) {
+                if (!match) detailRow.style.display = 'none';
+            }
+        });
+    }
+
+    // Close profile box when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.profile-box') && !event.target.closest('.arrow-box')) {
+            profileBox.classList.remove('expanded');
+        }
+    });
+</script>
+</body>
+</html>

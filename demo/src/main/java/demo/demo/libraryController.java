@@ -1,6 +1,6 @@
 package demo.demo;
-import java.util.HashMap;
-import java.util.Map;
+
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,32 +12,32 @@ import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class libraryController {
-    @Autowired userRepository repo;
-    @Autowired SessionService sessionService;
+
+    @Autowired
+    userRepository repo;
+
+    @Autowired
+    SessionService sessionService;
+
+    @Autowired
+    OrderRepository orderRepo;
 
     @GetMapping("/library")
-    public String library(Model model, HttpSession session,  HttpServletRequest request){
+    public String library(
+        Model model,
+        HttpServletRequest request,
+        HttpSession session
+    ) {
+        sessionService.restoreSession(request, session);
+        sessionService.addUserToModel(model, request, session);
 
-    sessionService.restoreSession(
-            request,
-            session
-        );
+        Long userId = (Long) session.getAttribute("userId");
 
-     Long userId = (Long) session.getAttribute("userId");
-        String username = (String) session.getAttribute("username");
-        String email = (String) session.getAttribute("email");
+        if (userId != null) {
+            List<Order> purchasedGames = orderRepo.findByUserId(userId);
+            model.addAttribute("games", purchasedGames);
+        }
 
-        Map<String, Object> userInfo = new HashMap<>();
-        userInfo.put("userId",userId);
-        userInfo.put("username", username);
-        userInfo.put("email", email);
-
-        boolean loggedIn = session.getAttribute("userId") != null;
-
-        model.addAttribute("loggedIn", loggedIn);
-         
-        model.addAttribute("userInfo", userInfo);
-
-    return "library";
-}
+        return "library";
+    }
 }

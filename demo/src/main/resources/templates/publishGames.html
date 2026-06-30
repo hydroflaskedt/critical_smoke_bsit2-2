@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/publishFlow.css">
+    <script src="/js/homepage.js" defer></script>
+    <title>Publish Game</title>
+</head>
+<body>
+    <div class="container">
+        <div th:replace="~{homepage :: navbar}"></div>
+
+        <div class="publish-flow-container">
+
+            <!-- Progress Indicator -->
+            <div class="progress-section">
+                <div class="progress-item active">
+                    <div class="progress-dot">1</div>
+                    <span>Details</span>
+                </div>
+                <div class="progress-line active"></div>
+                <div class="progress-item">
+                    <div class="progress-dot">2</div>
+                    <span>Upload Thumbnails</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-item">
+                    <div class="progress-dot">3</div>
+                    <span>Upload Game Files</span>
+                </div>
+            </div>
+
+            <!-- Details Section -->
+            <div class="flow-content">
+                <h2>Details</h2>
+
+                <form action="/publishGames" method="post" id="detailsForm">
+
+                    <div class="form-group">
+                        <label>Title (required)</label>
+                        <input 
+                            type="text" 
+                            name="title" 
+                            placeholder="Add a title that best describes your video game"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description 1 (required)</label>
+                        <textarea 
+                            name="description1" 
+                            placeholder="Add a short description of your video game"
+                            rows="4"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description 2 (required)</label>
+                        <textarea 
+                            name="description2" 
+                            placeholder="Describe the gameplay, genre, and main objective"
+                            rows="4"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Genre (required)</label>
+                            <div class="custom-dropdown">
+                                <button type="button" class="dropdown-toggle" onclick="toggleGenreDropdown(event)">
+                                    <span id="selectedGenres">Select genres</span>
+                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                        <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                </button>
+                                <div class="dropdown-content" id="genreDropdown">
+                                    <label class="genre-option">
+                                        <input type="checkbox" name="genres" value="Action" onchange="updateSelectedGenres()">
+                                        <span>Action</span>
+                                    </label>
+                                    <label class="genre-option">
+                                        <input type="checkbox" name="genres" value="Horror" onchange="updateSelectedGenres()">
+                                        <span>Horror</span>
+                                    </label>
+                                    <label class="genre-option">
+                                        <input type="checkbox" name="genres" value="Adventure" onchange="updateSelectedGenres()">
+                                        <span>Adventure</span>
+                                    </label>
+                                    <label class="genre-option">
+                                        <input type="checkbox" name="genres" value="Casual" onchange="updateSelectedGenres()">
+                                        <span>Casual</span>
+                                    </label>
+                                    <label class="genre-option">
+                                        <input type="checkbox" name="genres" value="Strategy" onchange="updateSelectedGenres()">
+                                        <span>Strategy</span>
+                                    </label>
+                                    <label class="genre-option">
+                                        <input type="checkbox" name="genres" value="Shooters" onchange="updateSelectedGenres()">
+                                        <span>Shooters</span>
+                                    </label>
+                                    <label class="genre-option">
+                                        <input type="checkbox" name="genres" value="Sports" onchange="updateSelectedGenres()">
+                                        <span>Sports</span>
+                                    </label>
+                                    <label class="genre-option">
+                                        <input type="checkbox" name="genres" value="RPG" onchange="updateSelectedGenres()">
+                                        <span>RPG</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Price (required)</label>
+                            <input 
+                                type="number" 
+                                name="price" 
+                                placeholder="PHP 0.00"
+                                step="0.01"
+                                min="0"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn-next">Next</button>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function toggleGenreDropdown(event) {
+            event.preventDefault();
+            const dropdown = document.getElementById('genreDropdown');
+            dropdown.classList.toggle('open');
+        }
+
+        function updateSelectedGenres() {
+            const checkboxes = document.querySelectorAll('input[name="genres"]:checked');
+            const selectedGenres = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (selectedGenres.length === 0) {
+                document.getElementById('selectedGenres').textContent = 'Select genres';
+            } else {
+                document.getElementById('selectedGenres').textContent = selectedGenres.join(', ');
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('genreDropdown');
+            const toggle = document.querySelector('.dropdown-toggle');
+            
+            if (!event.target.closest('.custom-dropdown')) {
+                dropdown.classList.remove('open');
+            }
+        });
+
+        // Validate at least one genre is selected
+        document.getElementById('detailsForm').addEventListener('submit', function(e) {
+            const checkboxes = document.querySelectorAll('input[name="genres"]:checked');
+            if (checkboxes.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one genre');
+            }
+        });
+    </script>
+</body>
+</html>

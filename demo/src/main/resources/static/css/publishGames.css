@@ -1,0 +1,16 @@
+.container{
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-content {
+    display: none; /* hidden initially */
+
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/adminPanel.css">
+    <link rel="stylesheet" href="/css/adminSidebar.css">
+    <script src="/js/homepage.js" defer></script>
+    <title>Admin Panel</title>
+</head>
+<body>
+    <div class="container">
+
+        <!-- Custom Admin Navbar -->
+        <div class="navbar">
+            <div class="left">
+                <div class="logo-box">
+                    <img id="logo" src="/images/logo.png" alt="logo">
+                </div>
+                <span style="color: #ffc300; font-weight: bold; font-size: 16px; margin-left: 10px;">Admin Panel</span>
+            </div>
+            <div class="right">
+                <div th:if="${loggedIn}" class="profile-box" id="profileBox">
+                    <div class="profile-text" th:text="${userInfo.username}"></div>
+                    <div class="profile-options">
+                        <button id="logout-btn">Logout</button>
+                    </div>
+                </div>
+                <div th:if="${loggedIn}" class="arrow-box" id="arrowBox">
+                    <img id="arrow-img" src="/images/arrow-down.png">
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar + content layout -->
+        <div class="admin-layout">
+
+            <div th:replace="adminSidebar :: sidebar(active='games')"></div>
+
+            <div class="admin-content">
+
+                <div class="admin-header">User Game Publish Requests</div>
+
+                <h3>Pending Approval</h3>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>GAME TITLE & THUMBNAIL</th>
+                            <th>DEVELOPER</th>
+                            <th>GENRE</th>
+                            <th>DATE SUBMITTED</th>
+                            <th>TRANSACTION STATUS</th>
+                            <th>POLICY OPERATIONS / ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="game : ${pendingGames}">
+                            <td>
+                                <div class="game-thumb">
+                                    <img th:src="${game.coverImage}" alt="cover">
+                                    <span th:text="${game.title}"></span>
+                                </div>
+                            </td>
+                            <td>Developer</td>
+                            <td th:text="${game.genre}"></td>
+                            <td th:text="${game.createdAt}"></td>
+                            <td>
+                                <span class="badge badge-pending">Pending</span>
+                            </td>
+                            <td>
+                                <form th:action="'/admin/approve/' + ${game.gameId}" method="post" style="display: inline;">
+                                    <button class="action-link" type="submit">Approve</button>
+                                </form>
+                                <span style="margin: 0 5px; color: #666;">/</span>
+                                <form th:action="'/admin/reject/' + ${game.gameId}" method="post" style="display: inline;">
+                                    <button class="action-link reject-link" type="submit">Reject</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- NEW: Edit Requests Section -->
+                <h3 style="margin-top: 40px;">Edit Requests</h3>
+                <table class="admin-table" th:if="${!pendingEdits.isEmpty()}">
+                    <thead>
+                        <tr>
+                            <th>GAME TITLE & THUMBNAIL</th>
+                            <th>DEVELOPER</th>
+                            <th>GENRE</th>
+                            <th>DATE SUBMITTED</th>
+                            <th>TRANSACTION STATUS</th>
+                            <th>POLICY OPERATIONS / ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="edit : ${pendingEdits}">
+                            <td>
+                                <div class="game-thumb">
+                                    <img th:src="${edit.coverImage}" alt="cover">
+                                    <span th:text="${edit.title}"></span>
+                                </div>
+                            </td>
+                            <td>Developer</td>
+                            <td th:text="${edit.genre}"></td>
+                            <td th:text="${edit.submittedAt}"></td>
+                            <td>
+                                <span class="badge-dot badge-dot-edit"></span>
+                                <span class="badge badge-edit">Edit Request</span>
+                            </td>
+                            <td>
+                                <form th:action="'/admin/approveEdit/' + ${edit.editId}" method="post" style="display: inline;">
+                                    <button class="action-link" type="submit">Approve</button>
+                                </form>
+                                <span style="margin: 0 5px; color: #666;">/</span>
+                                <form th:action="'/admin/rejectEdit/' + ${edit.editId}" method="post" style="display: inline;">
+                                    <button class="action-link reject-link" type="submit">Reject</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div th:if="${pendingEdits.isEmpty()}" style="color: #666; padding: 20px; text-align: center;">
+                    No pending edit requests
+                </div>
+
+                <h3 style="margin-top: 40px;">Approved Games</h3>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>GAME TITLE & THUMBNAIL</th>
+                            <th>DEVELOPER</th>
+                            <th>GENRE</th>
+                            <th>DATE SUBMITTED</th>
+                            <th>TRANSACTION STATUS</th>
+                            <th>POLICY OPERATIONS / ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="game : ${approvedGames}">
+                            <td>
+                                <div class="game-thumb">
+                                    <img th:src="${game.coverImage}" alt="cover">
+                                    <span th:text="${game.title}"></span>
+                                </div>
+                            </td>
+                            <td>Developer</td>
+                            <td th:text="${game.genre}"></td>
+                            <td th:text="${game.createdAt}"></td>
+                            <td>
+                                <!-- Show "Under Review" instead of "Published" if owner submitted an edit -->
+                                <span class="badge badge-approved" th:unless="${game.underReview}">Published</span>
+                                <span class="badge badge-pending" th:if="${game.underReview}">Under Review</span>
+                            </td>
+                            <td>
+                                <button class="action-link" th:onclick="|window.location.href='/game/${game.gameId}'|">
+                                    View Details
+                                </button>
+                                <span style="margin: 0 5px; color: #666;">/</span>
+                                <button class="action-link delete-link" th:onclick="|confirmDelete(${game.gameId})|">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3 style="margin-top: 40px;">Deleted Games</h3>
+                <table class="admin-table" th:if="${!deletedGames.isEmpty()}">
+                    <thead>
+                        <tr>
+                            <th>GAME TITLE & THUMBNAIL</th>
+                            <th>DEVELOPER</th>
+                            <th>GENRE</th>
+                            <th>DATE SUBMITTED</th>
+                            <th>TRANSACTION STATUS</th>
+                            <th>POLICY OPERATIONS / ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="game : ${deletedGames}">
+                            <td>
+                                <div class="game-thumb">
+                                    <img th:src="${game.coverImage}" alt="cover">
+                                    <span th:text="${game.title}"></span>
+                                </div>
+                            </td>
+                            <td>Developer</td>
+                            <td th:text="${game.genre}"></td>
+                            <td th:text="${game.createdAt}"></td>
+                            <td>
+                                <span class="badge badge-deleted">Deleted</span>
+                            </td>
+                            <td>
+                                <button class="action-link" th:onclick="|window.location.href='/game/${game.gameId}'|">
+                                    View Details
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div th:if="${deletedGames.isEmpty()}" style="color: #666; padding: 20px; text-align: center;">
+                    No deleted games
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script th:inline="javascript">
+        const loggedIn = /*[[${loggedIn}]]*/ false;
+
+        const profileBox = document.getElementById('profileBox');
+        const arrowBox = document.getElementById('arrowBox');
+
+        if (arrowBox) {
+            arrowBox.addEventListener('click', function() {
+                profileBox.classList.toggle('expanded');
+            });
+        }
+
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function() {
+                fetch('/logout', { method: 'POST' })
+                    .then(() => window.location.href = '/');
+            });
+        }
+
+        function confirmDelete(gameId) {
+            if (confirm('Are you sure you want to delete this game? It will no longer be visible.')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/admin/delete/' + gameId;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+</body>
+</html>

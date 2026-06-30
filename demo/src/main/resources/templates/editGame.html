@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/publishFlow.css">
+    <script src="/js/homepage.js" defer></script>
+    <title>Edit Game</title>
+</head>
+<body>
+    <div class="container">
+        <div th:replace="~{homepage :: navbar}"></div>
+
+        <div class="publish-flow-container">
+
+            <div class="flow-content">
+                <h2>Edit Game</h2>
+
+                <div th:if="${pendingEdit != null}"
+                     style="background:#3a2e10; color:#ffc300; padding:12px 16px; border-radius:8px; margin-bottom:24px; font-size:13px;">
+                    ⏳ You have a pending edit awaiting admin approval. Submitting again will update that request.
+                </div>
+
+                <form th:action="'/game/edit/' + ${game.gameId}" method="post" enctype="multipart/form-data">
+
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" name="title"
+                               th:value="${pendingEdit != null ? pendingEdit.title : game.title}">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Genre</label>
+                            <input type="text" name="genre"
+                                   th:value="${pendingEdit != null ? pendingEdit.genre : game.genre}">
+                        </div>
+                        <div class="form-group">
+                            <label>Price (PHP)</label>
+                            <input type="number" step="0.01" name="price"
+                                   th:value="${pendingEdit != null ? pendingEdit.price : game.price}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Short Description</label>
+                        <textarea name="description1" rows="3"
+                                  th:text="${pendingEdit != null ? pendingEdit.description1 : game.description1}"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Long Description</label>
+                        <textarea name="description2" rows="5"
+                                  th:text="${pendingEdit != null ? pendingEdit.description2 : game.description2}"></textarea>
+                    </div>
+
+                    <!-- Image uploads -->
+                    <div class="image-upload-grid">
+
+                        <!-- Cover Image -->
+                        <div class="image-upload-box large">
+                            <label>GAME MAIN COVER</label>
+                            <div class="image-preview" id="coverPreview">
+                                <img th:src="${pendingEdit != null ? pendingEdit.coverImage : game.coverImage}"
+                                     th:if="${(pendingEdit != null ? pendingEdit.coverImage : game.coverImage) != null}"
+                                     style="width:100%;height:100%;object-fit:cover;">
+                            </div>
+                            <input type="file" name="coverImage" accept="image/*" id="coverInput" style="display:none;">
+                            <button type="button" class="btn-upload" onclick="document.getElementById('coverInput').click()">Replace Image</button>
+                        </div>
+
+                        <!-- Game Logo -->
+                        <div class="image-upload-box">
+                            <label>GAME LOGO TRANSPARENT</label>
+                            <div class="image-preview" id="logoPreview">
+                                <img th:src="${pendingEdit != null ? pendingEdit.gameLogo : game.gameLogo}"
+                                     th:if="${(pendingEdit != null ? pendingEdit.gameLogo : game.gameLogo) != null}"
+                                     style="width:100%;height:100%;object-fit:cover;">
+                            </div>
+                            <input type="file" name="gameLogo" accept="image/*" id="logoInput" style="display:none;">
+                            <button type="button" class="btn-upload" onclick="document.getElementById('logoInput').click()">Replace Image</button>
+                        </div>
+
+                        <!-- Preview Image 1 -->
+                        <div class="image-upload-box">
+                            <label>GAME PREVIEW IMAGE 1</label>
+                            <div class="image-preview" id="preview1Preview">
+                                <img th:src="${pendingEdit != null ? pendingEdit.previewImage1 : game.previewImage1}"
+                                     th:if="${(pendingEdit != null ? pendingEdit.previewImage1 : game.previewImage1) != null}"
+                                     style="width:100%;height:100%;object-fit:cover;">
+                            </div>
+                            <input type="file" name="previewImage1" accept="image/*" id="preview1Input" style="display:none;">
+                            <button type="button" class="btn-upload" onclick="document.getElementById('preview1Input').click()">Replace Image</button>
+                        </div>
+
+                        <!-- Preview Image 2 -->
+                        <div class="image-upload-box">
+                            <label>GAME PREVIEW IMAGE 2</label>
+                            <div class="image-preview" id="preview2Preview">
+                                <img th:src="${pendingEdit != null ? pendingEdit.previewImage2 : game.previewImage2}"
+                                     th:if="${(pendingEdit != null ? pendingEdit.previewImage2 : game.previewImage2) != null}"
+                                     style="width:100%;height:100%;object-fit:cover;">
+                            </div>
+                            <input type="file" name="previewImage2" accept="image/*" id="preview2Input" style="display:none;">
+                            <button type="button" class="btn-upload" onclick="document.getElementById('preview2Input').click()">Replace Image</button>
+                        </div>
+
+                        <!-- Preview Image 3 -->
+                        <div class="image-upload-box">
+                            <label>GAME PREVIEW IMAGE 3</label>
+                            <div class="image-preview" id="preview3Preview">
+                                <img th:src="${pendingEdit != null ? pendingEdit.previewImage3 : game.previewImage3}"
+                                     th:if="${(pendingEdit != null ? pendingEdit.previewImage3 : game.previewImage3) != null}"
+                                     style="width:100%;height:100%;object-fit:cover;">
+                            </div>
+                            <input type="file" name="previewImage3" accept="image/*" id="preview3Input" style="display:none;">
+                            <button type="button" class="btn-upload" onclick="document.getElementById('preview3Input').click()">Replace Image</button>
+                        </div>
+
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn-back" onclick="window.location.href='/publishedGames'">Cancel</button>
+                        <button type="submit" class="btn-submit">Submit for Approval</button>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function wirePreview(inputId, previewId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            input.addEventListener('change', function () {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        preview.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+
+        wirePreview('coverInput', 'coverPreview');
+        wirePreview('logoInput', 'logoPreview');
+        wirePreview('preview1Input', 'preview1Preview');
+        wirePreview('preview2Input', 'preview2Preview');
+        wirePreview('preview3Input', 'preview3Preview');
+    </script>
+
+    <script th:if="${error == 'invalidImage'}">
+        alert("Please upload a valid image file.");
+    </script>
+</body>
+</html>
