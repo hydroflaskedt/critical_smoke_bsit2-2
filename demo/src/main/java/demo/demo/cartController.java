@@ -1,5 +1,6 @@
 package demo.demo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,10 +50,29 @@ public class cartController {
         if (userId != null) {
             List<CartItem> cartItems = cartRepo.findByUserId(userId);
 
-            double total = cartItems.stream()
-                .mapToDouble(CartItem::getGamePrice)
-                .sum();
+            // Remove cart items for deleted games
+            List<CartItem> itemsToDelete = new ArrayList<>();
+            for (CartItem item : cartItems) {
+                Game game = gameRepo.findById(item.getGameId()).orElse(null);
+                if (game != null && game.isDeleted()) {
+                    itemsToDelete.add(item);
+                }
+            }
+            for (CartItem item : itemsToDelete) {
+                cartRepo.delete(item);
+            }
 
+            // Refresh after deletion
+            cartItems = cartRepo.findByUserId(userId);
+
+            double total = 0.0;
+            for (CartItem item : cartItems) {
+                if (item.getGamePrice() != null) {
+                    total += item.getGamePrice();
+                }
+            }
+
+            // Voucher from session
             String appliedVoucher = (String) session.getAttribute("appliedVoucher");
             Integer discountPercent = (Integer) session.getAttribute("discountPercent");
 
@@ -61,14 +81,20 @@ public class cartController {
                 discountedTotal = total * (1 - discountPercent / 100.0);
             }
 
+            // One-time error message then clear it
+            String voucherError = (String) session.getAttribute("voucherError");
+            session.removeAttribute("voucherError");
+
+            // Unused vouchers for the dropdown
             List<Voucher> vouchers = voucherService.getUnusedVouchers(userId);
 
             model.addAttribute("cartItems", cartItems);
             model.addAttribute("total", total);
             model.addAttribute("discountedTotal", discountedTotal);
             model.addAttribute("appliedVoucher", appliedVoucher);
-            model.addAttribute("discountPercent", discountPercent);
+            model.addAttribute("discountPercent", discountPercent != null ? discountPercent : 0);
             model.addAttribute("vouchers", vouchers);
+            model.addAttribute("voucherError", voucherError);
         }
 
         return "cart";
@@ -81,11 +107,16 @@ public class cartController {
     ) {
         Long userId = (Long) session.getAttribute("userId");
 
-        if (userId == null) return "redirect:/auth";
+        if (userId == null) {
+            return "redirect:/auth";
+        }
 
         Game game = gameRepo.findById(gameId).orElse(null);
-        if (game == null) return "redirect:/";
+        if (game == null) {
+            return "redirect:/";
+        }
 
+        // Check if already in cart
         List<CartItem> cartItems = cartRepo.findByUserId(userId);
         boolean alreadyInCart = cartItems.stream()
             .anyMatch(item -> item.getGameId().equals(gameId));
@@ -95,6 +126,7 @@ public class cartController {
             return "redirect:/game/" + gameId;
         }
 
+        // Check if already purchased
         List<Order> orders = orderRepo.findByUserId(userId);
         boolean alreadyPurchased = orders.stream()
             .anyMatch(order -> order.getGameId().equals(gameId));
@@ -116,7 +148,7 @@ public class cartController {
         return "redirect:/game/" + gameId;
     }
 
-    // Buy Now — adds to cart then goes straight to checkout
+    // Buy Now: add to cart (if not already there) then go straight to checkout
     @PostMapping("/cart/buy-now")
     public String buyNow(
         @RequestParam Long gameId,
@@ -125,19 +157,23 @@ public class cartController {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) return "redirect:/auth";
 
-        Game game = gameRepo.findById(gameId).orElse(null);
-        if (game == null) return "redirect:/";
+        // Check if already purchased
+        List<Order> orders = orderRepo.findByUserId(userId);
+        boolean alreadyPurchased = orders.stream()
+            .anyMatch(order -> order.getGameId().equals(gameId));
+        if (alreadyPurchased) {
+            session.setAttribute("cartError", "already_purchased");
+            return "redirect:/game/" + gameId;
+        }
 
+        // Add to cart if not already there
         List<CartItem> cartItems = cartRepo.findByUserId(userId);
         boolean alreadyInCart = cartItems.stream()
             .anyMatch(item -> item.getGameId().equals(gameId));
 
         if (!alreadyInCart) {
-            List<Order> orders = orderRepo.findByUserId(userId);
-            boolean alreadyPurchased = orders.stream()
-                .anyMatch(order -> order.getGameId().equals(gameId));
-
-            if (!alreadyPurchased) {
+            Game game = gameRepo.findById(gameId).orElse(null);
+            if (game != null) {
                 CartItem cartItem = new CartItem();
                 cartItem.setUserId(userId);
                 cartItem.setGameId(gameId);
@@ -149,46 +185,6 @@ public class cartController {
         }
 
         return "redirect:/checkout";
-    }
-
-    @PostMapping("/cart/apply-voucher")
-    public String applyVoucher(
-        @RequestParam String voucherCode,
-        HttpSession session
-    ) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) return "redirect:/auth";
-
-        int discount = voucherService.applyVoucher(userId, voucherCode.trim());
-        if (discount > 0) {
-            session.setAttribute("appliedVoucher", voucherCode.trim());
-            session.setAttribute("discountPercent", discount);
-        } else {
-            session.setAttribute("voucherError", "Invalid or already used voucher.");
-        }
-
-        return "redirect:/cart";
-    }
-
-    @GetMapping("/cart/remove-voucher")
-    public String removeVoucher(HttpSession session) {
-        session.removeAttribute("appliedVoucher");
-        session.removeAttribute("discountPercent");
-        return "redirect:/cart";
-    }
-
-    @PostMapping("/cart/remove-all")
-    public String removeAll(HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) return "redirect:/auth";
-
-        List<CartItem> items = cartRepo.findByUserId(userId);
-        cartRepo.deleteAll(items);
-
-        session.removeAttribute("appliedVoucher");
-        session.removeAttribute("discountPercent");
-
-        return "redirect:/cart";
     }
 
     @Transactional
@@ -205,13 +201,67 @@ public class cartController {
     }
 
     @Transactional
-    @PostMapping("/checkout")
-    public String checkout(HttpSession session) {
+    @PostMapping("/cart/remove-all")
+    public String removeAll(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId != null) {
+            List<CartItem> items = cartRepo.findByUserId(userId);
+            cartRepo.deleteAll(items);
+        }
+        // Clear voucher too when cart is wiped
+        session.removeAttribute("appliedVoucher");
+        session.removeAttribute("discountPercent");
+        return "redirect:/cart";
+    }
+
+    @PostMapping("/cart/apply-voucher")
+    public String applyVoucher(
+        @RequestParam String voucherCode,
+        HttpSession session
+    ) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) return "redirect:/auth";
 
+        String code = voucherCode == null ? "" : voucherCode.trim();
+
+        if (code.isEmpty()) {
+            session.setAttribute("voucherError", "Please select a voucher.");
+            return "redirect:/cart";
+        }
+
+        int discount = voucherService.applyVoucher(userId, code);
+        if (discount > 0) {
+            session.setAttribute("appliedVoucher", code);
+            session.setAttribute("discountPercent", discount);
+        } else {
+            session.setAttribute("voucherError", "That voucher code is invalid or already used.");
+        }
+
+        return "redirect:/cart";
+    }
+
+    @GetMapping("/cart/remove-voucher")
+    public String removeVoucher(HttpSession session) {
+        session.removeAttribute("appliedVoucher");
+        session.removeAttribute("discountPercent");
+        return "redirect:/cart";
+    }
+
+    // Original checkout — kept exactly as-is
+    @Transactional
+    @PostMapping("/checkout")
+    public String checkout(HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+
+        if (userId == null) {
+            return "redirect:/auth";
+        }
+
         List<CartItem> cartItems = cartRepo.findByUserId(userId);
-        if (cartItems.isEmpty()) return "redirect:/cart";
+
+        if (cartItems.isEmpty()) {
+            return "redirect:/cart";
+        }
 
         List<Order> existingOrders = orderRepo.findByUserId(userId);
 

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/paymentHistory.css">
+    <script src="/js/homepage.js" defer></script>
+    <title>Transaction History</title>
+</head>
+<body>
+<div class="container">
+    <div th:replace="~{homepage :: navbar}"></div>
+
+    <div class="ph-wrapper">
+        <h1 class="ph-title">Transaction History</h1>
+        <p class="ph-subtitle">Monitor your platform transactions and manage game file refund operations within the 14-day policy timeline.</p>
+
+        <div class="ph-empty" th:if="${orders.isEmpty()}">
+            You have no transactions yet.
+        </div>
+
+        <div class="ph-table-wrap" th:if="${!orders.isEmpty()}">
+            <table class="ph-table">
+                <thead>
+                    <tr>
+                        <th>Purchased Item Detail</th>
+                        <th>Purchase Date</th>
+                        <th>Price Amount</th>
+                        <th>Transaction Status</th>
+                        <th>Policy Operations / Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="order : ${orders}">
+                        <td>
+                            <div class="ph-item">
+                                <img th:src="${order.coverImage}" alt="cover">
+                                <div class="ph-item-info">
+                                    <span class="ph-item-title" th:text="${order.gameTitle}"></span>
+                                    <span class="ph-item-txn" th:text="'TXN-' + ${order.orderId}"></span>
+                                </div>
+                            </div>
+                        </td>
+                        <td th:text="${#dates.format(order.createdAt, 'MMM d, yyyy')}"></td>
+                        <td th:text="'PHP ' + ${order.gamePrice}"></td>
+                        <td>
+                            <span class="ph-badge ph-badge-complete" th:unless="${order.refunded}">COMPLETE</span>
+                            <span class="ph-badge ph-badge-refunded" th:if="${order.refunded}">REFUNDED</span>
+                        </td>
+                        <td>
+                            <!-- Not refunded yet -->
+                            <th:block th:unless="${order.refunded}">
+                                <!-- Within 14 days: show Request Refund button -->
+                                <th:block th:if="${T(java.time.temporal.ChronoUnit).DAYS.between(order.createdAt.toInstant(), T(java.time.Instant).now()) <= 14}">
+                                    <form th:action="'/payment-history/refund/' + ${order.orderId}" method="post" style="display:inline;">
+                                        <button type="submit" class="ph-refund-btn">Request Refund</button>
+                                    </form>
+                                </th:block>
+                                <!-- Past 14 days: show expired message -->
+                                <th:block th:if="${T(java.time.temporal.ChronoUnit).DAYS.between(order.createdAt.toInstant(), T(java.time.Instant).now()) > 14}">
+                                    <span class="ph-expired">Refund Window Expired<br>(Max 14 Days)</span>
+                                </th:block>
+                            </th:block>
+                            <!-- Already refunded: nothing -->
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const loggedIn = /*[[${loggedIn}]]*/ false;
+</script>
+</body>
+</html>

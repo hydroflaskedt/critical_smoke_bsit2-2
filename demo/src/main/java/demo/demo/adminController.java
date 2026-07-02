@@ -1,4 +1,5 @@
 package demo.demo;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,203 +11,311 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+
 @Controller
 public class adminController {
+
     @Autowired
-GameRepository gameRepo;
+    GameRepository gameRepo;
+
     @Autowired
-userRepository repo;
+    userRepository repo;
+
     @Autowired
-OrderRepository orderRepo;
+    OrderRepository orderRepo;
+
     @Autowired
-PendingEditRepository pendingEditRepo;
+    CartItemRepository cartItemRepo;
+
     @Autowired
-SessionService sessionService;
+    PendingEditRepository pendingEditRepo;
+
+    @Autowired
+    SessionService sessionService;
+
     @GetMapping("/admin")
-public String adminPanel(
-Model model,
-HttpServletRequest request,
-HttpSession session
+    public String adminPanel(
+        Model model,
+        HttpServletRequest request,
+        HttpSession session
     ) {
         sessionService.restoreSession(request, session);
-Long userId = (Long) session.getAttribute("userId");
-if (userId == null) {
-return "redirect:/auth";
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/auth";
         }
-user user = repo.findById(userId).orElse(null);
-if (user == null || !user.isAdmin()) {
-return "redirect:/";
+
+        user user = repo.findById(userId).orElse(null);
+        if (user == null || !user.isAdmin()) {
+            return "redirect:/";
         }
+
         sessionService.addUserToModel(model, request, session);
-List<Game> pendingGames = gameRepo.findByApprovedFalseAndDeletedFalse();
-List<Game> approvedGames = gameRepo.findByApprovedTrueAndDeletedFalse();
-List<Game> deletedGames = gameRepo.findByApprovedTrueAndDeletedTrue();
-List<PendingEdit> pendingEdits = pendingEditRepo.findAll();
-model.addAttribute("pendingGames", pendingGames);
-model.addAttribute("approvedGames", approvedGames);
-model.addAttribute("deletedGames", deletedGames);
-model.addAttribute("pendingEdits", pendingEdits);
-return "adminPanel";
-    }
-    @PostMapping("/admin/approve/{id}")
-public String approveGame(
-        @PathVariable
-Long id,
-HttpSession session
-    ) {
-Long userId = (Long) session.getAttribute("userId");
-if (userId == null) {
-return "redirect:/auth";
-        }
-user user = repo.findById(userId).orElse(null);
-if (user == null || !user.isAdmin()) {
-return "redirect:/";
-        }
-Game game = gameRepo.findById(id).orElse(null);
-if (game != null) {
-game.setApproved(true);
-            gameRepo.save(game);
-        }
-return "redirect:/admin";
-    }
-    @PostMapping("/admin/reject/{id}")
-public String rejectGame(
-        @PathVariable
-Long id,
-HttpSession session
-    ) {
-Long userId = (Long) session.getAttribute("userId");
-if (userId == null) {
-return "redirect:/auth";
-        }
-user user = repo.findById(userId).orElse(null);
-if (user == null || !user.isAdmin()) {
-return "redirect:/";
-        }
-        gameRepo.deleteById(id);
-return "redirect:/admin";
-    }
-    @PostMapping("/admin/delete/{id}")
-public String deleteGame(
-        @PathVariable
-Long id,
-HttpSession session
-    ) {
-Long userId = (Long) session.getAttribute("userId");
-if (userId == null) {
-return "redirect:/auth";
-        }
-user user = repo.findById(userId).orElse(null);
-if (user == null || !user.isAdmin()) {
-return "redirect:/";
-        }
-Game game = gameRepo.findById(id).orElse(null);
-if (game != null) {
-game.setDeleted(true);
-            gameRepo.save(game);
-        }
-return "redirect:/admin";
-    }
 
-    // Approve an edit request — copies the PendingEdit fields onto the live Game
-    @PostMapping("/admin/approveEdit/{editId}")
-public String approveEdit(
-        @PathVariable
-Long editId,
-HttpSession session
-    ) {
-Long userId = (Long) session.getAttribute("userId");
-if (userId == null) {
-return "redirect:/auth";
-        }
-user user = repo.findById(userId).orElse(null);
-if (user == null || !user.isAdmin()) {
-return "redirect:/";
-        }
+        List<Game> pendingGames = gameRepo.findByApprovedFalseAndDeletedFalse();
+        List<Game> approvedGames = gameRepo.findByApprovedTrueAndDeletedFalse();
+        List<Game> deletedGames = gameRepo.findByApprovedTrueAndDeletedTrue();
+        List<PendingEdit> pendingEdits = pendingEditRepo.findAll();
 
-PendingEdit edit = pendingEditRepo.findById(editId).orElse(null);
-if (edit != null) {
-Game game = gameRepo.findById(edit.getGameId()).orElse(null);
-if (game != null) {
-game.setTitle(edit.getTitle());
-game.setDescription1(edit.getDescription1());
-game.setDescription2(edit.getDescription2());
-game.setGenre(edit.getGenre());
-game.setPrice(edit.getPrice());
-game.setCoverImage(edit.getCoverImage());
-game.setGameLogo(edit.getGameLogo());
-game.setPreviewImage1(edit.getPreviewImage1());
-game.setPreviewImage2(edit.getPreviewImage2());
-game.setPreviewImage3(edit.getPreviewImage3());
-game.setUnderReview(false);
-                gameRepo.save(game);
-            }
-            pendingEditRepo.delete(edit);
-        }
-return "redirect:/admin";
-    }
+        model.addAttribute("pendingGames", pendingGames);
+        model.addAttribute("approvedGames", approvedGames);
+        model.addAttribute("deletedGames", deletedGames);
+        model.addAttribute("pendingEdits", pendingEdits);
 
-    // Reject an edit request — discards the PendingEdit, restores the game to visible
-    @PostMapping("/admin/rejectEdit/{editId}")
-public String rejectEdit(
-        @PathVariable
-Long editId,
-HttpSession session
-    ) {
-Long userId = (Long) session.getAttribute("userId");
-if (userId == null) {
-return "redirect:/auth";
-        }
-user user = repo.findById(userId).orElse(null);
-if (user == null || !user.isAdmin()) {
-return "redirect:/";
-        }
-
-PendingEdit edit = pendingEditRepo.findById(editId).orElse(null);
-if (edit != null) {
-Game game = gameRepo.findById(edit.getGameId()).orElse(null);
-if (game != null) {
-game.setUnderReview(false);
-                gameRepo.save(game);
-            }
-            pendingEditRepo.delete(edit);
-        }
-return "redirect:/admin";
+        return "adminPanel";
     }
 
     @GetMapping("/admin/customers")
-public String customerManagement(
-    Model model,
-    HttpServletRequest request,
-    HttpSession session
-) {
-    sessionService.restoreSession(request, session);
+    public String customerManagement(
+        Model model,
+        HttpServletRequest request,
+        HttpSession session
+    ) {
+        sessionService.restoreSession(request, session);
 
-    Long userId = (Long) session.getAttribute("userId");
-    if (userId == null) {
-        return "redirect:/auth";
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/auth";
+        }
+
+        user user = repo.findById(userId).orElse(null);
+        if (user == null || !user.isAdmin()) {
+            return "redirect:/";
+        }
+
+        sessionService.addUserToModel(model, request, session);
+
+        List<user> allUsers = repo.findAll();
+        List<CustomerRow> customerRows = new java.util.ArrayList<>();
+
+        for (user u : allUsers) {
+            List<Order> purchases = orderRepo.findByUserId(u.getUserId());
+            List<Game> published = gameRepo.findByOwnerId(u.getUserId());
+
+            CustomerRow row = new CustomerRow(u, purchases, published);
+            customerRows.add(row);
+        }
+
+        model.addAttribute("customerRows", customerRows);
+
+        return "customerManagement";
     }
 
-    user user = repo.findById(userId).orElse(null);
-    if (user == null || !user.isAdmin()) {
-        return "redirect:/";
+    @PostMapping("/admin/approve/{id}")
+    public String approveGame(
+        @PathVariable
+        Long id,
+        HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/auth";
+        }
+
+        user user = repo.findById(userId).orElse(null);
+        if (user == null || !user.isAdmin()) {
+            return "redirect:/";
+        }
+
+        Game game = gameRepo.findById(id).orElse(null);
+        if (game != null) {
+            game.setApproved(true);
+            gameRepo.save(game);
+        }
+
+        return "redirect:/admin";
     }
 
-    sessionService.addUserToModel(model, request, session);
+    @PostMapping("/admin/reject/{id}")
+    public String rejectGame(
+        @PathVariable
+        Long id,
+        HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/auth";
+        }
 
-    List<user> allUsers = repo.findAll();
-    List<CustomerRow> customerRows = new java.util.ArrayList<>();
+        user user = repo.findById(userId).orElse(null);
+        if (user == null || !user.isAdmin()) {
+            return "redirect:/";
+        }
 
-    for (user u : allUsers) {
-        List<Order> purchases = orderRepo.findByUserId(u.getUserId());
-        List<Game> published = gameRepo.findByOwnerId(u.getUserId());
-        
-        CustomerRow row = new CustomerRow(u, purchases, published);
-        customerRows.add(row);
+        gameRepo.deleteById(id);
+        return "redirect:/admin";
     }
 
-    model.addAttribute("customerRows", customerRows);
+    @PostMapping("/admin/delete/{id}")
+    public String deleteGame(
+        @PathVariable
+        Long id,
+        HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/auth";
+        }
 
-    return "customerManagement";
-}
+        user user = repo.findById(userId).orElse(null);
+        if (user == null || !user.isAdmin()) {
+            return "redirect:/";
+        }
+
+        Game game = gameRepo.findById(id).orElse(null);
+        if (game != null) {
+            game.setDeleted(true);
+            gameRepo.save(game);
+            
+            // Remove this game from all users' carts
+            List<CartItem> cartItems = cartItemRepo.findByGameId(id);
+            for (CartItem item : cartItems) {
+                cartItemRepo.delete(item);
+            }
+        }
+
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/admin/restore/{id}")
+    public String restoreGame(
+        @PathVariable
+        Long id,
+        HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/auth";
+        }
+
+        user user = repo.findById(userId).orElse(null);
+        if (user == null || !user.isAdmin()) {
+            return "redirect:/";
+        }
+
+        Game game = gameRepo.findById(id).orElse(null);
+        if (game != null) {
+            game.setDeleted(false);
+            gameRepo.save(game);
+        }
+
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/admin/approveEdit/{editId}")
+    public String approveEdit(
+        @PathVariable
+        Long editId,
+        HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/auth";
+        }
+
+        user user = repo.findById(userId).orElse(null);
+        if (user == null || !user.isAdmin()) {
+            return "redirect:/";
+        }
+
+        PendingEdit edit = pendingEditRepo.findById(editId).orElse(null);
+        if (edit != null) {
+            Game game = gameRepo.findById(edit.getGameId()).orElse(null);
+            if (game != null) {
+                game.setTitle(edit.getTitle());
+                game.setDescription1(edit.getDescription1());
+                game.setDescription2(edit.getDescription2());
+                game.setGenre(edit.getGenre());
+                game.setPrice(edit.getPrice());
+                game.setCoverImage(edit.getCoverImage());
+                game.setGameLogo(edit.getGameLogo());
+                game.setPreviewImage1(edit.getPreviewImage1());
+                game.setPreviewImage2(edit.getPreviewImage2());
+                game.setPreviewImage3(edit.getPreviewImage3());
+                game.setUnderReview(false);
+                gameRepo.save(game);
+            }
+            pendingEditRepo.delete(edit);
+        }
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/admin/rejectEdit/{editId}")
+    public String rejectEdit(
+        @PathVariable
+        Long editId,
+        HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/auth";
+        }
+
+        user user = repo.findById(userId).orElse(null);
+        if (user == null || !user.isAdmin()) {
+            return "redirect:/";
+        }
+
+        PendingEdit edit = pendingEditRepo.findById(editId).orElse(null);
+        if (edit != null) {
+            Game game = gameRepo.findById(edit.getGameId()).orElse(null);
+            if (game != null) {
+                game.setUnderReview(false);
+                gameRepo.save(game);
+            }
+            pendingEditRepo.delete(edit);
+        }
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/admin/ban/{userId}")
+    public String banUser(
+        @PathVariable
+        Long userId,
+        HttpSession session
+    ) {
+        Long adminId = (Long) session.getAttribute("userId");
+        if (adminId == null) {
+            return "redirect:/auth";
+        }
+
+        user admin = repo.findById(adminId).orElse(null);
+        if (admin == null || !admin.isAdmin()) {
+            return "redirect:/";
+        }
+
+        user userToBan = repo.findById(userId).orElse(null);
+        if (userToBan != null) {
+            userToBan.setBanned(true);
+            repo.save(userToBan);
+        }
+
+        return "redirect:/admin/customers";
+    }
+
+    @PostMapping("/admin/unban/{userId}")
+    public String unbanUser(
+        @PathVariable
+        Long userId,
+        HttpSession session
+    ) {
+        Long adminId = (Long) session.getAttribute("userId");
+        if (adminId == null) {
+            return "redirect:/auth";
+        }
+
+        user admin = repo.findById(adminId).orElse(null);
+        if (admin == null || !admin.isAdmin()) {
+            return "redirect:/";
+        }
+
+        user userToUnban = repo.findById(userId).orElse(null);
+        if (userToUnban != null) {
+            userToUnban.setBanned(false);
+            repo.save(userToUnban);
+        }
+
+        return "redirect:/admin/customers";
+    }
 }

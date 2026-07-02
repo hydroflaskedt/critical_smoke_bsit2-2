@@ -2,6 +2,7 @@ package demo.demo;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
+
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -65,6 +67,13 @@ public class LoginSignupController {
             return response;
         }
 
+        // Check if user is banned
+        if (foundUser.isBanned()) {
+            response.put("success", false);
+            response.put("reason", "banned");
+            return response;
+        }
+
         session.setAttribute("userId", foundUser.getUserId());
         session.setAttribute("username", foundUser.getUsername());
         session.setAttribute("email", foundUser.getEmail());
@@ -76,6 +85,7 @@ public class LoginSignupController {
         jar.addCookie(cookie);
 
         response.put("success", true);
+
         if (foundUser.isAdmin()) {
             response.put("redirect", "/userOrAdmin");
         } else {

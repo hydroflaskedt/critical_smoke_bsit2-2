@@ -9,152 +9,141 @@
     <title>Checkout</title>
 </head>
 <body>
-    <div class="container">
-        <div th:replace="~{homepage :: navbar}"></div>
+<div class="container">
+    <div th:replace="~{homepage :: navbar}"></div>
 
-        <div class="checkout-wrapper">
+    <div class="checkout-wrapper">
 
-            <!-- LEFT: CONTACT + PAYMENT -->
-            <div class="checkout-left">
+        <!-- LEFT: Contact + Payment -->
+        <div class="checkout-left">
 
-                <div class="contact-box">
-                    <label class="field-label">Contact</label>
-                    <input
-                        type="text"
-                        class="contact-input"
-                        placeholder="Email or mobile phone number"
-                    >
-                </div>
-
-                <h2 class="payment-title">Payment</h2>
-
-                <div class="payment-options">
-                    <label class="payment-option">
-                        <input type="radio" name="payment" value="gcash" checked>
-                        <div class="payment-card">
-                            <img src="/images/gcash.png" alt="GCash" class="payment-icon">
-                            <span>GCash</span>
-                        </div>
-                    </label>
-                    <label class="payment-option">
-                        <input type="radio" name="payment" value="credit">
-                        <div class="payment-card">
-                            <img src="/images/credit.png" alt="Credit Card" class="payment-icon">
-                            <span>Credit Card</span>
-                        </div>
-                    </label>
-                </div>
-
-                <form action="/checkout/place" method="post">
-                    <input type="hidden" name="paymentMethod" id="paymentMethodInput" value="gcash">
-                    <button type="submit" class="place-order-btn">Place Order</button>
-                </form>
-
+            <div class="contact-box">
+                <label class="field-label">Contact</label>
+                <input type="text" class="contact-input"
+                       placeholder="Email or mobile phone number">
             </div>
 
-            <!-- RIGHT: SUMMARY -->
-            <div class="checkout-right">
+            <h2 class="payment-title">Payment</h2>
 
-                <h2 class="summary-title">Summary</h2>
-
-                <div class="checkout-summary-items">
-                    <div class="checkout-summary-item" th:each="item : ${cartItems}">
-                        <img th:src="${item.coverImage}" alt="cover">
-                        <span th:text="${item.gameTitle}"></span>
-                        <span class="checkout-item-price">PHP <span th:text="${item.gamePrice}"></span></span>
+            <div class="payment-options">
+                <label class="payment-option">
+                    <input type="radio" name="payment" value="gcash" id="radio-gcash" checked>
+                    <div class="payment-card">
+                        <img src="/images/gcash.png" alt="GCash" class="payment-icon">
+                        <span>GCash</span>
                     </div>
+                </label>
+                <label class="payment-option">
+                    <input type="radio" name="payment" value="credit" id="radio-credit">
+                    <div class="payment-card">
+                        <img src="/images/credit.png" alt="Credit Card" class="payment-icon">
+                        <span>Credit Card</span>
+                    </div>
+                </label>
+            </div>
+
+            <form action="/checkout/place" method="post">
+                <input type="hidden" name="paymentMethod" id="paymentMethodInput" value="gcash">
+                <button type="submit" class="place-order-btn">Place Order</button>
+            </form>
+
+        </div>
+
+        <!-- RIGHT: Summary -->
+        <div class="checkout-right">
+            <h2 class="summary-title">Summary</h2>
+
+            <div class="checkout-summary-items">
+                <div class="checkout-summary-item" th:each="item : ${cartItems}">
+                    <img th:src="${item.coverImage}" alt="cover">
+                    <span th:text="${item.gameTitle}"></span>
+                    <span class="checkout-item-price">PHP <span th:text="${item.gamePrice}"></span></span>
                 </div>
+            </div>
 
-                <!-- Voucher dropdown (only show if no voucher applied yet) -->
-                <div class="voucher-dropdown" th:if="${appliedVoucher == null}">
-                    <button type="button" class="voucher-trigger" onclick="toggleVoucherPanel()">
-                        <span class="voucher-trigger-icon">🎟</span>
-                        <span class="voucher-trigger-label">Digital Voucher</span>
-                        <span class="voucher-trigger-chevron" id="voucherChevron">⌄</span>
-                    </button>
+            <div class="checkout-summary-footer">
+                <span th:text="${cartItems.size()} + ' products'"></span>
+                <span>PHP <span th:text="${#numbers.formatDecimal(total, 1, 2)}"></span></span>
+            </div>
 
-                    <div class="voucher-panel" id="voucherPanel" style="display:none;">
-
-                        <!-- Voucher cards -->
-                        <form th:each="v : ${vouchers}"
-                              action="/checkout/apply-voucher"
-                              method="post"
-                              class="voucher-card-form">
-                            <input type="hidden" name="voucherCode" th:value="${v.code}">
-                            <button type="submit" class="voucher-card">
-                                <span class="voucher-card-icon">🎟</span>
-                                <span class="voucher-card-info">
-                                    <span class="voucher-card-title"
-                                          th:text="${v.discountPercent} + '% OFF New User Discount'"></span>
-                                    <span class="voucher-card-sub" th:text="${v.code}"></span>
-                                </span>
-                                <span class="voucher-card-radio"></span>
-                            </button>
-                        </form>
-
-                        <div th:if="${vouchers == null or vouchers.isEmpty()}" class="voucher-panel-empty">
-                            No vouchers available.
-                        </div>
-
-                        <!-- Enter code manually -->
-                        <form action="/checkout/apply-voucher" method="post" class="voucher-code-form">
-                            <input type="text" name="voucherCode" class="voucher-code-input" placeholder="Enter Code">
-                            <button type="submit" class="voucher-code-submit">›</button>
-                        </form>
+            <!-- Voucher dropdown (only when no voucher applied) -->
+            <div class="voucher-dropdown" th:if="${appliedVoucher == null or appliedVoucher == ''}">
+                <button type="button" class="voucher-trigger" onclick="toggleVoucherPanel()">
+                    <span class="voucher-trigger-icon">🎟</span>
+                    <span class="voucher-trigger-label">Digital Voucher</span>
+                    <span class="voucher-trigger-chevron" id="voucherChevron">⌄</span>
+                </button>
+                <div class="voucher-panel" id="voucherPanel" style="display:none;">
+                    <form th:each="v : ${vouchers}" action="/checkout/apply-voucher" method="post" class="voucher-card-form">
+                        <input type="hidden" name="voucherCode" th:value="${v.code}">
+                        <button type="submit" class="voucher-card">
+                            <span class="voucher-card-icon">🎟</span>
+                            <span class="voucher-card-info">
+                                <span class="voucher-card-title" th:text="${v.discountPercent} + '% OFF New User Discount'"></span>
+                                <span class="voucher-card-sub" th:text="${v.code}"></span>
+                            </span>
+                            <span class="voucher-card-radio"></span>
+                        </button>
+                    </form>
+                    <div th:if="${vouchers == null or vouchers.isEmpty()}" class="voucher-panel-empty">
+                        No vouchers available.
                     </div>
+                    <form action="/checkout/apply-voucher" method="post" class="voucher-code-form">
+                        <input type="text" name="voucherCode" class="voucher-code-input" placeholder="Enter Code">
+                        <button type="submit" class="voucher-code-submit">›</button>
+                    </form>
                 </div>
+            </div>
 
-                <!-- Voucher applied block -->
-                <div class="voucher-applied-block" th:if="${appliedVoucher != null}">
-                    <div class="voucher-card voucher-card-selected">
-                        <span class="voucher-card-icon">🎟</span>
-                        <span class="voucher-card-info">
-                            <span class="voucher-card-title"
-                                  th:text="${discountPercent} + '% OFF New User Discount'"></span>
-                            <span class="voucher-card-sub" th:text="${appliedVoucher}"></span>
-                        </span>
-                        <a href="/checkout/remove-voucher" class="voucher-remove-link">Remove</a>
-                    </div>
+            <!-- Voucher applied block -->
+            <div class="voucher-applied-block" th:if="${appliedVoucher != null and appliedVoucher != ''}">
+                <div class="voucher-card voucher-card-selected">
+                    <span class="voucher-card-icon">🎟</span>
+                    <span class="voucher-card-info">
+                        <span class="voucher-card-title" th:text="${discountPercent} + '% OFF New User Discount'"></span>
+                        <span class="voucher-card-sub" th:text="${appliedVoucher}"></span>
+                    </span>
+                    <a href="/checkout/remove-voucher" class="voucher-remove-link">Remove</a>
                 </div>
+            </div>
 
-                <!-- Breakdown -->
-                <div class="summary-breakdown">
-                    <div class="summary-row" th:if="${discountPercent != null and discountPercent > 0}">
-                        <span>Discount/Coupon</span>
-                        <span class="summary-discount-amount"
-                              th:text="'PHP -' + ${#numbers.formatDecimal(total - discountedTotal, 1, 2)}"></span>
-                    </div>
-                    <div class="summary-row" th:if="${discountPercent != null and discountPercent > 0}">
-                        <span th:text="${cartItems.size()} + ' products'"></span>
-                        <span class="summary-row-strike"
-                              th:text="'PHP ' + ${#numbers.formatDecimal(total, 1, 2)}"></span>
-                    </div>
-                    <div class="summary-row">
-                        <span th:text="${cartItems.size()} + ' products'"></span>
-                        <span class="summary-row-final"
-                              th:text="'PHP ' + ${#numbers.formatDecimal(discountedTotal, 1, 2)}"></span>
-                    </div>
+            <!-- Discount breakdown -->
+            <div class="summary-breakdown">
+                <div class="summary-row" th:if="${discountPercent != null and discountPercent > 0}">
+                    <span>Discount/Coupon</span>
+                    <span class="summary-discount-amount"
+                          th:text="'PHP -' + ${#numbers.formatDecimal(total - discountedTotal, 1, 2)}"></span>
                 </div>
-
+                <div class="summary-row" th:if="${discountPercent != null and discountPercent > 0}">
+                    <span th:text="${cartItems.size()} + ' products'"></span>
+                    <span class="summary-row-strike"
+                          th:text="'PHP ' + ${#numbers.formatDecimal(total, 1, 2)}"></span>
+                </div>
+                <div class="summary-row">
+                    <span th:text="${cartItems.size()} + ' products'"></span>
+                    <span class="summary-row-final"
+                          th:text="'PHP ' + ${#numbers.formatDecimal(discountedTotal, 1, 2)}"></span>
+                </div>
             </div>
 
         </div>
     </div>
+</div>
 
-    <script>
-        document.querySelectorAll('input[name="payment"]').forEach(radio => {
-            radio.addEventListener('change', () => {
-                document.getElementById('paymentMethodInput').value = radio.value;
-            });
+<script>
+    document.querySelectorAll('input[name="payment"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            document.getElementById('paymentMethodInput').value = radio.value;
         });
+    });
 
-        function toggleVoucherPanel() {
-            const panel = document.getElementById('voucherPanel');
-            const chevron = document.getElementById('voucherChevron');
-            const isOpen = panel.style.display === 'block';
-            panel.style.display = isOpen ? 'none' : 'block';
-            chevron.textContent = isOpen ? '⌄' : '⌃';
-        }
-    </script>
+    function toggleVoucherPanel() {
+        const panel = document.getElementById('voucherPanel');
+        const chevron = document.getElementById('voucherChevron');
+        const isOpen = panel.style.display === 'block';
+        panel.style.display = isOpen ? 'none' : 'block';
+        chevron.textContent = isOpen ? '⌄' : '⌃';
+    }
+</script>
 </body>
 </html>

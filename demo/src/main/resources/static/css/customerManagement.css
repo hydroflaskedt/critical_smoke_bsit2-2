@@ -124,6 +124,16 @@
     color: #ffb84d;
 }
 
+.cm-badge-warning {
+    background: #8b6914;
+    color: #ffc300;
+}
+
+.cm-badge-banned {
+    background: #8b1a1a;
+    color: #ff6b6b;
+}
+
 .cm-view-btn {
     background: transparent;
     border: 1px solid #555;
@@ -132,10 +142,23 @@
     padding: 6px 14px;
     font-size: 12px;
     cursor: pointer;
+    transition: all 0.2s;
 }
 
 .cm-view-btn:hover {
     border-color: #999;
+    color: #fff;
+}
+
+.cm-ban-btn {
+    border-color: #ff6b6b;
+    color: #ff6b6b;
+}
+
+.cm-ban-btn:hover {
+    border-color: #ff9999;
+    color: #ff9999;
+    background: rgba(255, 107, 107, 0.1);
 }
 
 /* ===== Expandable detail row ===== */
@@ -257,7 +280,7 @@
     opacity: 1;
 }
 
-#logout-btn, #payment-history-btn {
+#logout-btn {
     border: 1px solid #555;
     background-color: #2a2a2a;
     color: #ffffff;
@@ -268,7 +291,7 @@
     transition: all 0.2s;
 }
 
-#logout-btn:hover, #payment-history-btn:hover {
+#logout-btn:hover {
     background-color: #3a3a3a;
     border-color: #888;
 }

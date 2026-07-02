@@ -4,39 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/css/homepage.css">
+    <link rel="stylesheet" href="/css/library.css">
     <script src="/js/homepage.js" defer></script>
     <title>My Library</title>
 </head>
 <body>
-    <div class="container">
-        <div th:replace="~{homepage :: navbar}"></div>
+<div class="container">
+    <div th:replace="~{homepage :: navbar}"></div>
+    <div class="library-page">
 
-        <div style="padding: 40px 20px;">
-            <h1 style="color: white; font-size: 32px; margin: 0 0 30px 0;">Library</h1>
+        <div class="library-main">
+            <h1 class="library-title">Library</h1>
 
-            <div
-                th:if="${games.isEmpty()}"
-                style="color: #aaa; padding: 20px; font-size: 16px;"
-            >
-                You haven't purchased any games yet. <a href="/" style="color: #ffc300;">Browse the store</a>
+            <div th:if="${games == null or games.isEmpty()}" class="library-empty">
+                You haven't purchased any games yet.
+                <a href="/">Browse the store</a>
             </div>
 
-            <div class="games-container" th:if="${!games.isEmpty()}">
-                <div
-                    class="game-card"
-                    th:each="game : ${games}"
-                    th:onclick="|window.location.href='/game/${game.gameId}'|"
-                    style="cursor: pointer;"
-                >
-                    <img th:src="${game.coverImage}" alt="cover">
+            <div class="library-grid" id="libraryGrid"
+                 th:if="${games != null and !games.isEmpty()}">
+                <div class="library-card"
+                     th:each="game : ${games}"
+                     th:onclick="|window.location.href='/game/${game.gameId}'|">
+                    <img th:src="${game.coverImage}" th:alt="${game.gameTitle}">
                     <h3 th:text="${game.gameTitle}"></h3>
                 </div>
             </div>
         </div>
-    </div>
 
-    <script th:inline="javascript">
-        const loggedIn = /*[[${loggedIn}]]*/ false;
-    </script>
+    </div>
+</div>
+
+<!-- Thank-you modal — only shown right after a checkout -->
+<div class="thankyou-overlay" id="thankyouOverlay"
+     th:if="${checkoutSuccess}"
+     th:classappend="${checkoutSuccess} ? ' active' : ''">
+    <div class="thankyou-modal">
+        <h2>🎮 Thank You!</h2>
+        <p>Your order has been placed successfully.<br>Your games are now in your library.</p>
+
+        <p th:if="${receiptDiscountPercent > 0}"
+           style="color:#ffc300; font-size:14px; margin-top:8px;">
+            <span th:text="${receiptDiscountPercent}"></span>% discount applied —
+            you saved PHP <span th:text="${#numbers.formatDecimal(receiptOriginalTotal - receiptFinalTotal, 1, 2)}"></span>!
+        </p>
+
+        <p style="font-size:15px; font-weight:700; margin-top:12px;">
+            Total paid: PHP <span th:text="${#numbers.formatDecimal(receiptFinalTotal, 1, 2)}"></span>
+        </p>
+
+        <button class="go-library-btn"
+                onclick="document.getElementById('thankyouOverlay').classList.remove('active')">
+            Continue
+        </button>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const loggedIn = /*[[${loggedIn}]]*/ false;
+</script>
+
+<style>
+    .thankyou-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.75);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+    }
+    .thankyou-overlay.active {
+        display: flex;
+    }
+    .thankyou-modal {
+        background: #2a2a2a;
+        border-radius: 12px;
+        padding: 48px 40px;
+        text-align: center;
+        max-width: 420px;
+        width: 90%;
+        border: 1px solid #3a3a3a;
+    }
+    .thankyou-modal h2 {
+        color: #ffc300;
+        font-size: 26px;
+        margin-bottom: 12px;
+    }
+    .thankyou-modal p {
+        color: #ccc;
+        font-size: 15px;
+        line-height: 1.6;
+        margin-bottom: 8px;
+    }
+    .go-library-btn {
+        display: inline-block;
+        padding: 12px 28px;
+        background: #ffc300;
+        color: #1a1a1a;
+        font-weight: 700;
+        font-size: 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        border: none;
+        margin-top: 16px;
+    }
+    .go-library-btn:hover {
+        background: #e6b000;
+    }
+</style>
 </body>
 </html>

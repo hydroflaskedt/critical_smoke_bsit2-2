@@ -424,6 +424,21 @@
     color: #d4d4d8;
 }
 
+.cart-item img {
+    width: 100px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.summary-item img {
+    width: 40px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
 .summary-discount-amount { font-weight: 700; color: #f4f4f5; }
 .summary-row-strike { text-decoration: line-through; color: #777; }
 .summary-row-final { font-size: 15px; font-weight: 700; color: #f4f4f5; }

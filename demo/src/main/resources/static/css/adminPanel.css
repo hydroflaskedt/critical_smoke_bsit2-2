@@ -202,3 +202,11 @@ h3 {
     background: #42a5f5;
     box-shadow: 0 0 0 3px rgba(66, 165, 245, 0.25);
 }
+
+.restore-link {
+    color: #4caf50;
+}
+
+.restore-link:hover {
+    color: #66bb6a;
+}

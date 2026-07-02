@@ -60,13 +60,12 @@ public class CheckoutController {
         model.addAttribute("total", total);
         model.addAttribute("discountedTotal", discountedTotal);
         model.addAttribute("appliedVoucher", appliedVoucher);
-        model.addAttribute("discountPercent", discountPercent);
+        model.addAttribute("discountPercent", discountPercent != null ? discountPercent : 0);
         model.addAttribute("vouchers", vouchers);
 
         return "checkout";
     }
 
-    // Apply voucher from checkout page — stays on checkout
     @PostMapping("/checkout/apply-voucher")
     public String applyVoucher(
         @RequestParam String voucherCode,
@@ -84,7 +83,6 @@ public class CheckoutController {
         return "redirect:/checkout";
     }
 
-    // Remove voucher from checkout page — stays on checkout
     @GetMapping("/checkout/remove-voucher")
     public String removeVoucher(HttpSession session) {
         session.removeAttribute("appliedVoucher");
@@ -101,45 +99,50 @@ public class CheckoutController {
         if (userId == null) return "redirect:/auth";
 
         List<CartItem> cartItems = cartRepo.findByUserId(userId);
+        if (cartItems.isEmpty()) return "redirect:/cart";
 
-        for (CartItem item : cartItems) {
-            Order order = new Order();
-            order.setUserId(userId);
-            order.setGameId(item.getGameId());
-            order.setGameTitle(item.getGameTitle());
-            order.setGamePrice(item.getGamePrice());
-            order.setCoverImage(item.getCoverImage());
-            orderRepo.save(order);
+        // Calculate totals
+        double originalTotal = cartItems.stream().mapToDouble(CartItem::getGamePrice).sum();
+        String appliedVoucher = (String) session.getAttribute("appliedVoucher");
+        Integer discountPercent = (Integer) session.getAttribute("discountPercent");
+        double finalTotal = originalTotal;
+        if (discountPercent != null && discountPercent > 0) {
+            finalTotal = originalTotal * (1 - discountPercent / 100.0);
         }
 
-        String appliedVoucher = (String) session.getAttribute("appliedVoucher");
+        // Save orders (skip duplicates)
+        List<Order> existingOrders = orderRepo.findByUserId(userId);
+        for (CartItem item : cartItems) {
+            boolean alreadyOwned = existingOrders.stream()
+                .anyMatch(o -> o.getGameId().equals(item.getGameId()));
+            if (!alreadyOwned) {
+                Order order = new Order();
+                order.setUserId(userId);
+                order.setGameId(item.getGameId());
+                order.setGameTitle(item.getGameTitle());
+                order.setGamePrice(item.getGamePrice());
+                order.setCoverImage(item.getCoverImage());
+                orderRepo.save(order);
+            }
+        }
+
+        // Mark voucher used
         if (appliedVoucher != null) {
             voucherService.markUsed(userId, appliedVoucher);
-            session.removeAttribute("appliedVoucher");
-            session.removeAttribute("discountPercent");
         }
 
+        // Stash receipt info for the success/library page
+        session.setAttribute("checkoutSuccess", true);
+        session.setAttribute("receiptDiscountPercent", discountPercent != null ? discountPercent : 0);
+        session.setAttribute("receiptOriginalTotal", originalTotal);
+        session.setAttribute("receiptFinalTotal", finalTotal);
+
+        // Clear cart and voucher
+        session.removeAttribute("appliedVoucher");
+        session.removeAttribute("discountPercent");
         cartRepo.deleteAll(cartItems);
 
-        return "redirect:/checkout/success";
-    }
-
-    @GetMapping("/checkout/success")
-    public String checkoutSuccess(
-        Model model,
-        HttpServletRequest request,
-        HttpSession session
-    ) {
-        sessionService.restoreSession(request, session);
-
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) return "redirect:/auth";
-
-        sessionService.addUserToModel(model, request, session);
-
-        List<Order> library = orderRepo.findByUserId(userId);
-        model.addAttribute("library", library);
-
-        return "checkoutSuccess";
+        // Go straight to library — modal shown there
+        return "redirect:/library";
     }
 }

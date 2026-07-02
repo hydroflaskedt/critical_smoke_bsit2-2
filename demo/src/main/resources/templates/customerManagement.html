@@ -22,14 +22,15 @@
                 <span style="color: #ffc300; font-weight: bold; font-size: 16px; margin-left: 10px;">Admin Panel</span>
             </div>
             <div class="right">
-                <div th:if="${loggedIn}" class="profile-box">
-                    <div class="profile-text" th:text="${userInfo.username}"> </div>
+                <div th:if="${loggedIn}" class="profile-box" id="profileBox">
+                    <div class="profile-text" th:text="${userInfo.username}"></div>
                     <div class="profile-options">
                         <button id="logout-btn">Logout</button>
-                        <button id="payment-history-btn">Payment History</button>
                     </div>
                 </div>
-                <div th:if="${loggedIn}" class="arrow-box"> <img id="arrow-img" src="/images/arrow-down.png"> </div>
+                <div th:if="${loggedIn}" class="arrow-box" id="arrowBox">
+                    <img id="arrow-img" src="/images/arrow-down.png">
+                </div>
             </div>
         </div>
 
@@ -76,10 +77,29 @@
                                         </div>
                                     </td>
                                     <td th:text="${row.account.email}"></td>
-                                    <td>None</td>
-                                    <td><span class="cm-badge cm-badge-active">Active</span></td>
                                     <td>
-                                        <button type="button" class="cm-view-btn">View User</button>
+                                        <span th:if="${row.account.banned}" class="cm-badge cm-badge-warning">⚠️ Banned</span>
+                                        <span th:unless="${row.account.banned}">None</span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${row.account.banned}" class="cm-badge cm-badge-banned">Banned</span>
+                                        <span th:unless="${row.account.banned}" class="cm-badge cm-badge-active">Active</span>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="cm-view-btn cm-ban-btn" 
+                                                th:if="${row.account.banned}"
+                                                th:data-user-id="${row.account.userId}"
+                                                th:data-username="${row.account.username}"
+                                                onclick="event.stopPropagation(); confirmUnban(this)">
+                                            Unban User
+                                        </button>
+                                        <button type="button" class="cm-view-btn cm-ban-btn" 
+                                                th:unless="${row.account.banned}"
+                                                th:data-user-id="${row.account.userId}"
+                                                th:data-username="${row.account.username}"
+                                                onclick="event.stopPropagation(); confirmBan(this)">
+                                            Ban User
+                                        </button>
                                     </td>
                                 </tr>
 
@@ -138,52 +158,78 @@
 
     </div>
 
-   <script>
-    // Profile box expand/collapse
-    const profileBox = document.querySelector('.profile-box');
-    const arrowBox = document.querySelector('.arrow-box');
+    <script>
+        // Profile box expand/collapse
+        const profileBox = document.getElementById('profileBox');
+        const arrowBox = document.getElementById('arrowBox');
 
-    if (arrowBox) {
-        arrowBox.addEventListener('click', function() {
-            profileBox.classList.toggle('expanded');
-        });
-    }
+        if (arrowBox) {
+            arrowBox.addEventListener('click', function() {
+                profileBox.classList.toggle('expanded');
+            });
+        }
 
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
-            fetch('/logout', { method: 'POST' })
-                .then(() => window.location.href = '/');
-        });
-    }
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function() {
+                fetch('/logout', { method: 'POST' })
+                    .then(() => window.location.href = '/');
+            });
+        }
 
-    // Customer row expand/collapse
-    function toggleCustomerRow(rowEl) {
-        const targetId = rowEl.nextElementSibling.id;
-        const detailRow = document.getElementById(targetId);
-        if (!detailRow) return;
-        detailRow.style.display = (detailRow.style.display === 'none' || !detailRow.style.display) ? 'table-row' : 'none';
-    }
+        // Customer row expand/collapse
+        function toggleCustomerRow(rowEl) {
+            const targetId = rowEl.nextElementSibling.id;
+            const detailRow = document.getElementById(targetId);
+            if (!detailRow) return;
+            detailRow.style.display = (detailRow.style.display === 'none' || !detailRow.style.display) ? 'table-row' : 'none';
+        }
 
-    function filterCustomers() {
-        const query = document.getElementById('customerSearchInput').value.trim().toLowerCase();
-        document.querySelectorAll('.cm-row[data-search]').forEach(row => {
-            const haystack = row.getAttribute('data-search').toLowerCase();
-            const detailRow = row.nextElementSibling;
-            const match = haystack.includes(query);
-            row.style.display = match ? '' : 'none';
-            if (detailRow && detailRow.classList.contains('cm-detail-row')) {
-                if (!match) detailRow.style.display = 'none';
+        function filterCustomers() {
+            const query = document.getElementById('customerSearchInput').value.trim().toLowerCase();
+            document.querySelectorAll('.cm-row[data-search]').forEach(row => {
+                const haystack = row.getAttribute('data-search').toLowerCase();
+                const detailRow = row.nextElementSibling;
+                const match = haystack.includes(query);
+                row.style.display = match ? '' : 'none';
+                if (detailRow && detailRow.classList.contains('cm-detail-row')) {
+                    if (!match) detailRow.style.display = 'none';
+                }
+            });
+        }
+
+        function confirmBan(btn) {
+            const userId = btn.getAttribute('data-user-id');
+            const username = btn.getAttribute('data-username');
+            
+            if (confirm(`Are you sure you want to ban ${username}? They will not be able to access the platform.`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/admin/ban/' + userId;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function confirmUnban(btn) {
+            const userId = btn.getAttribute('data-user-id');
+            const username = btn.getAttribute('data-username');
+            
+            if (confirm(`Are you sure you want to unban ${username}? They will be able to access the platform again.`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/admin/unban/' + userId;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        // Close profile box when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.profile-box') && !event.target.closest('.arrow-box')) {
+                profileBox.classList.remove('expanded');
             }
         });
-    }
-
-    // Close profile box when clicking outside
-    document.addEventListener('click', function(event) {
-        if (!event.target.closest('.profile-box') && !event.target.closest('.arrow-box')) {
-            profileBox.classList.remove('expanded');
-        }
-    });
-</script>
+    </script>
 </body>
 </html>

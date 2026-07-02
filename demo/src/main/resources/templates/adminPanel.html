@@ -166,8 +166,7 @@
                         </tr>
                     </tbody>
                 </table>
-
-                <h3 style="margin-top: 40px;">Deleted Games</h3>
+<h3 style="margin-top: 40px;">Deleted Games</h3>
                 <table class="admin-table" th:if="${!deletedGames.isEmpty()}">
                     <thead>
                         <tr>
@@ -194,6 +193,10 @@
                                 <span class="badge badge-deleted">Deleted</span>
                             </td>
                             <td>
+                                <form th:action="'/admin/restore/' + ${game.gameId}" method="post" style="display: inline;">
+                                    <button class="action-link restore-link" type="submit" onclick="return confirm('Restore this game? It will be visible again.');">Restore</button>
+                                </form>
+                                <span style="margin: 0 5px; color: #666;">/</span>
                                 <button class="action-link" th:onclick="|window.location.href='/game/${game.gameId}'|">
                                     View Details
                                 </button>
